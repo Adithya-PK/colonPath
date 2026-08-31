@@ -431,7 +431,7 @@ fun ReportScreen(
                     Text("Download PDF Report")
                 }
                 Spacer(modifier = Modifier.height(8.dp))
-                OutlinedButton(
+                Button(
                     onClick = {
                         val success = exportAnalysisTableCsv(context)
                         coroutineScope.launch {
@@ -441,15 +441,26 @@ fun ReportScreen(
                             )
                         }
                     },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Blue50,
+                        contentColor = Blue500
+                    ),
+                    border = BorderStroke(1.dp, Blue500.copy(alpha = 0.35f)),
+                    shape = RoundedCornerShape(100.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.TableChart,
                         contentDescription = null,
+                        tint = Blue500,
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Download Analysis Table (CSV)")
+                    Text(
+                        text = "Download Analysis Table (CSV)",
+                        style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+                        color = Blue500
+                    )
                 }
                 Spacer(modifier = Modifier.height(100.dp))
             }

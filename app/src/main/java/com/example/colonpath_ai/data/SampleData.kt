@@ -338,13 +338,26 @@ object SampleDataRepository {
         return removed
     }
 
-    fun generateNextCaseId(): String {
+    fun isCaseIdExists(caseId: String): Boolean {
+        return sampleCaseHistory.any { it.caseId.equals(caseId.trim(), ignoreCase = true) }
+    }
+
+    fun generateNextCaseId(year: Int = 2026): String {
+        // Extract all numeric sequence numbers from existing cases (e.g., COL-2026-006 -> 6)
         val existingNums = sampleCaseHistory.mapNotNull { c ->
-            val match = Regex("""COL-\d+-(\d+)""").find(c.caseId)
+            val match = Regex("""COL-(?:\d+-)?(\d+)""", RegexOption.IGNORE_CASE).find(c.caseId.trim())
             match?.groupValues?.get(1)?.toIntOrNull()
         }
-        val nextNum = (existingNums.maxOrNull() ?: sampleCaseHistory.size) + 1
-        return String.format(java.util.Locale.US, "COL-2026-%03d", nextNum)
+        val maxNum = existingNums.maxOrNull() ?: 0
+        var candidateNum = maxNum + 1
+        var candidateId = String.format(java.util.Locale.US, "COL-%d-%03d", year, candidateNum)
+        
+        // Guarantee uniqueness against any existing case IDs
+        while (isCaseIdExists(candidateId)) {
+            candidateNum++
+            candidateId = String.format(java.util.Locale.US, "COL-%d-%03d", year, candidateNum)
+        }
+        return candidateId
     }
 
     fun generateNextPatientId(): String {

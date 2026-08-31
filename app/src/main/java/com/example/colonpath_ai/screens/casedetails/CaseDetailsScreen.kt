@@ -1,25 +1,27 @@
 package com.example.colonpath_ai.screens.casedetails
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import com.example.colonpath_ai.components.*
-import com.example.colonpath_ai.data.SampleDataRepository
-import com.example.colonpath_ai.ui.theme.*
-
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.RateReview
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import com.example.colonpath_ai.components.*
+import com.example.colonpath_ai.data.SampleDataRepository
 import com.example.colonpath_ai.model.CaseStatus
+import com.example.colonpath_ai.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,7 +32,6 @@ fun CaseDetailsScreen(
     onRetake: () -> Unit = {}
 ) {
     val case = SampleDataRepository.getCaseById(caseId)
-    val analysis = SampleDataRepository.getAnalysisForCase(caseId)
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     if (case == null) {
@@ -100,6 +101,7 @@ fun CaseDetailsScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
+                .background(BackgroundLight)
                 .padding(paddingValues),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -108,11 +110,17 @@ fun CaseDetailsScreen(
             if (case.status == CaseStatus.FAILED) {
                 item {
                     Card(
+                        modifier = Modifier.fillMaxWidth(),
                         colors = CardDefaults.cardColors(containerColor = RedLight),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(12.dp),
+                        border = BorderStroke(1.dp, RedError.copy(alpha = 0.4f))
                     ) {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(Icons.Default.Warning, contentDescription = "Alert", tint = RedError)
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
@@ -158,6 +166,7 @@ fun CaseDetailsScreen(
                 }
             }
 
+            // Section 1: Case Details
             item {
                 SectionHeader(
                     title = "Case Details",
@@ -166,22 +175,67 @@ fun CaseDetailsScreen(
                     onToggle = { toggleSection("Case Header") }
                 )
                 if (expandedSections.contains("Case Header")) {
-                    Card {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-                                Text(case.caseId, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleLarge)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+                        border = BorderStroke(1.dp, CardBorder)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = case.caseId,
+                                    fontWeight = FontWeight.Bold,
+                                    style = MaterialTheme.typography.titleLarge,
+                                    color = TextPrimary
+                                )
                                 StatusBadge(case.status)
                             }
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text("Date: ${case.analysisDate}")
-                            Text("Tissue: ${case.tissue}")
-                            Text("Sample Type: ${case.sampleType}")
-                            Text("Stain: ${case.stain}")
+                            HorizontalDivider(color = CardBorder.copy(alpha = 0.5f))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Analysis Date", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+                                Text(case.analysisDate, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium), color = TextPrimary)
+                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Tissue Origin", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+                                Text(case.tissue, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium), color = TextPrimary)
+                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Sample Type", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+                                Text(case.sampleType, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium), color = TextPrimary)
+                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Staining Protocol", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+                                Text(case.stain, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium), color = TextPrimary)
+                            }
                         }
                     }
                 }
             }
 
+            // Section 2: Update Status
             item {
                 SectionHeader(
                     title = "Update Status",
@@ -190,10 +244,20 @@ fun CaseDetailsScreen(
                     onToggle = { toggleSection("Status & Actions") }
                 )
                 if (expandedSections.contains("Status & Actions")) {
-                    Card {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text("Mark Case Status:", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
-                            Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+                        border = BorderStroke(1.dp, CardBorder)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Text("Mark Case Status:", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = TextPrimary)
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -219,6 +283,7 @@ fun CaseDetailsScreen(
                 }
             }
 
+            // Section 3: Patient Information (Matches exact same width, borders, padding and corner radius)
             item {
                 SectionHeader(
                     title = "Patient Information",
@@ -227,20 +292,48 @@ fun CaseDetailsScreen(
                     onToggle = { toggleSection("Patient Information") }
                 )
                 if (expandedSections.contains("Patient Information")) {
-                    Card {
-                        Column(modifier = Modifier.padding(16.dp)) {
-                            Text("Patient ID: ${case.patient.patientId}")
-                            Text("Name: ${case.patient.patientName}")
-                            Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+                        border = BorderStroke(1.dp, CardBorder)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Patient ID", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+                                Text(case.patient.patientId, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium), color = TextPrimary)
+                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text("Patient Name", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+                                Text(case.patient.patientName, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium), color = TextPrimary)
+                            }
+                            HorizontalDivider(color = CardBorder.copy(alpha = 0.5f))
                             val displayNotes = case.notes.ifBlank { case.patient.notes }.ifBlank { "None recorded" }
-                            Text("Notes: $displayNotes", color = TextPrimary)
+                            Text("Clinical Notes:", style = MaterialTheme.typography.labelMedium, color = TextSecondary)
+                            Text(displayNotes, style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
                         }
                     }
                 }
             }
 
+            // Section 4: Action Button
             item {
-                Button(onClick = onViewReport, modifier = Modifier.fillMaxWidth()) {
+                Button(
+                    onClick = onViewReport,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     Text("View Full Report")
                 }
                 Spacer(modifier = Modifier.height(100.dp))
