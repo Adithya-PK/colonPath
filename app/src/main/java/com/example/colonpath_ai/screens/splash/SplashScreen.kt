@@ -1,6 +1,7 @@
 package com.example.colonpath_ai.screens.splash
 
 import androidx.compose.animation.core.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -98,35 +99,35 @@ fun SplashScreen(
                 verticalArrangement = Arrangement.Center,
                 modifier = Modifier.padding(horizontal = 32.dp)
             ) {
-                // Logo Container with Soft Pulse Glow
+                // Logo Container with Soft Symmetrical Pulse Glow
                 Box(
                     modifier = Modifier.size(150.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    // Animated Soft Pulse Ring
+                    // Animated Symmetrical Pulse Ring (Circle matching Circle)
                     Box(
                         modifier = Modifier
-                            .size(142.dp)
+                            .size(134.dp)
                             .scale(pulseScale)
                             .clip(CircleShape)
                             .background(Blue500.copy(alpha = pulseAlpha))
                     )
 
-                    // Logo Card
+                    // Circular Logo Card
                     Surface(
                         modifier = Modifier
-                            .size(120.dp)
+                            .size(112.dp)
                             .scale(logoScale.value)
                             .alpha(logoAlpha.value)
-                            .shadow(8.dp, RoundedCornerShape(26.dp), spotColor = Blue500.copy(alpha = 0.18f)),
-                        shape = RoundedCornerShape(26.dp),
+                            .shadow(8.dp, CircleShape, spotColor = Blue500.copy(alpha = 0.15f)),
+                        shape = CircleShape,
                         color = SurfaceWhite,
-                        border = androidx.compose.foundation.BorderStroke(1.dp, CardBorder)
+                        border = BorderStroke(1.dp, CardBorder)
                     ) {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
-                                .padding(12.dp),
+                                .padding(16.dp),
                             contentAlignment = Alignment.Center
                         ) {
                             Image(
