@@ -1,53 +1,37 @@
 package com.example.colonpath_ai.screens.analysis
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.*
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.outlined.Science
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import com.example.colonpath_ai.ui.theme.AmberLight
-import com.example.colonpath_ai.ui.theme.AmberWarning
-import com.example.colonpath_ai.ui.theme.BackgroundLight
-import com.example.colonpath_ai.ui.theme.Blue500
-import com.example.colonpath_ai.ui.theme.CardBorder
-import com.example.colonpath_ai.ui.theme.GreenSuccess
-import com.example.colonpath_ai.ui.theme.TextPrimary
-import com.example.colonpath_ai.ui.theme.TextSecondary
+import androidx.compose.ui.unit.sp
+import com.example.colonpath_ai.ui.theme.*
 import kotlinx.coroutines.delay
+
+data class AnalysisStage(
+    val title: String,
+    val description: String
+)
 
 @Composable
 fun AnalysisProgressScreen(
@@ -55,27 +39,49 @@ fun AnalysisProgressScreen(
     onComplete: () -> Unit,
     onBack: () -> Unit
 ) {
-    val stages = listOf(
-        "Image received",
-        "Image quality check",
-        "Nuclear analysis",
-        "Nuclear classification",
-        "Gland segmentation",
-        "Morphology analysis",
-        "Reference retrieval",
-        "AI reasoning",
-        "Report generation"
-    )
+    val stages = remember {
+        listOf(
+            AnalysisStage("Image Ingestion & Standardization", "Validating resolution, pixel format, and scale calibration"),
+            AnalysisStage("Optical Quality Assessment", "Checking blur metric, contrast depth, and staining clarity"),
+            AnalysisStage("Nuclear Segmentation", "Detecting individual epithelial and stromal nuclei boundaries"),
+            AnalysisStage("Nuclear Pleomorphism Classification", "Quantifying nuclear area, circularity, and density"),
+            AnalysisStage("Glandular Architecture Segmentation", "Extracting epithelial lumen contours and irregularity index"),
+            AnalysisStage("Morphological Feature Extraction", "Calculating spatial crowding, perimeter, and branching"),
+            AnalysisStage("Reference Database Vector Retrieval", "Querying histological embeddings against reference cases"),
+            AnalysisStage("Multi-Evidence AI Reasoning", "Synthesizing computational observations and uncertainty bounds"),
+            AnalysisStage("Diagnostic Report Synthesis", "Finalizing structured diagnostic summary and morphology tables")
+        )
+    }
 
     var currentStage by remember { mutableIntStateOf(0) }
+
+    // Smooth animated progress value
+    val targetProgress = (currentStage.toFloat() / stages.size.toFloat()).coerceIn(0f, 1f)
+    val animatedProgress by animateFloatAsState(
+        targetValue = targetProgress,
+        animationSpec = tween(durationMillis = 260, easing = FastOutSlowInEasing),
+        label = "progress"
+    )
+
+    // Pulse animation for active step badge
+    val infiniteTransition = rememberInfiniteTransition(label = "stepPulse")
+    val pulseScale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.15f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(600, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "pulse"
+    )
 
     LaunchedEffect(Unit) {
         for (i in stages.indices) {
             currentStage = i
-            delay((180..280).random().toLong())
+            delay((200..320).random().toLong())
         }
         currentStage = stages.size
-        delay(200)
+        delay(250)
         onComplete()
     }
 
@@ -86,105 +92,222 @@ fun AnalysisProgressScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .padding(horizontal = 20.dp, vertical = 24.dp)
         ) {
-            Text(
-                text = "Analyzing H&E Sample",
-                style = MaterialTheme.typography.headlineMedium,
-                color = TextPrimary
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = caseId,
-                style = MaterialTheme.typography.bodyMedium,
-                color = TextSecondary
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            Surface(
-                shape = RoundedCornerShape(16.dp),
-                color = AmberLight
-            ) {
-                Text(
-                    text = "Prototype Simulation",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = AmberWarning,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(32.dp))
-
-            val progress = currentStage.toFloat() / stages.size.toFloat()
-            LinearProgressIndicator(
-                progress = { progress },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(8.dp),
-                color = Blue500,
-                trackColor = CardBorder,
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
+            // Header Section
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(6.dp)
             ) {
-                stages.forEachIndexed { index, stage ->
-                    AnimatedVisibility(
-                        visible = index <= currentStage,
-                        enter = fadeIn(animationSpec = tween(180)) + slideInVertically(animationSpec = tween(180))
+                Surface(
+                    shape = RoundedCornerShape(16.dp),
+                    color = Blue50,
+                    border = BorderStroke(1.dp, Blue500.copy(alpha = 0.2f))
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Science,
+                            contentDescription = null,
+                            tint = Blue500,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "AI Histopathology Pipeline • $caseId",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = Blue500,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                Text(
+                    text = "Analyzing Specimen",
+                    style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+                    color = TextPrimary
+                )
+
+                Text(
+                    text = "Executing neural morphology extraction and reference matching",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextSecondary
+                )
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Overall Progress Summary Card
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+                border = BorderStroke(1.dp, CardBorder)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(18.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = if (currentStage < stages.size) "Step ${currentStage + 1} of ${stages.size}" else "Pipeline Complete",
+                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                            color = TextPrimary
+                        )
+                        Text(
+                            text = "${(animatedProgress * 100).toInt()}%",
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                            color = Blue500
+                        )
+                    }
+
+                    // Polished Gradient Progress Bar
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(8.dp)
+                            .clip(CircleShape)
+                            .background(BackgroundLight)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(fraction = animatedProgress)
+                                .height(8.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    Brush.horizontalGradient(
+                                        colors = listOf(Blue500, Navy800)
+                                    )
+                                )
+                        )
+                    }
+
+                    val activeDesc = if (currentStage < stages.size) stages[currentStage].description else "Compiling results..."
+                    Text(
+                        text = activeDesc,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextSecondary,
+                        maxLines = 1
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Scrollable Stages List
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(stages.size) { index ->
+                    val stage = stages[index]
+                    val isDone = index < currentStage
+                    val isCurrent = index == currentStage
+
+                    val cardBg by animateColorAsState(
+                        targetValue = when {
+                            isCurrent -> Blue50.copy(alpha = 0.5f)
+                            isDone -> SurfaceWhite
+                            else -> SurfaceWhite.copy(alpha = 0.6f)
+                        },
+                        label = "cardBg"
+                    )
+
+                    val borderColor by animateColorAsState(
+                        targetValue = when {
+                            isCurrent -> Blue500.copy(alpha = 0.4f)
+                            isDone -> GreenSuccess.copy(alpha = 0.3f)
+                            else -> CardBorder.copy(alpha = 0.4f)
+                        },
+                        label = "borderBg"
+                    )
+
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        color = cardBg,
+                        border = BorderStroke(1.dp, borderColor)
                     ) {
                         Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 14.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            when {
-                                index < currentStage -> {
-                                    Icon(
-                                        imageVector = Icons.Default.Check,
-                                        contentDescription = "Completed",
-                                        tint = GreenSuccess,
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(16.dp))
-                                    Text(
-                                        text = stage,
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color = TextPrimary
-                                    )
+                            // Step Indicator Icon / Loader
+                            Box(
+                                modifier = Modifier.size(28.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                when {
+                                    isDone -> {
+                                        Surface(
+                                            shape = CircleShape,
+                                            color = GreenSuccess.copy(alpha = 0.15f),
+                                            modifier = Modifier.fillMaxSize()
+                                        ) {
+                                            Box(contentAlignment = Alignment.Center) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Check,
+                                                    contentDescription = "Completed",
+                                                    tint = GreenSuccess,
+                                                    modifier = Modifier.size(16.dp)
+                                                )
+                                            }
+                                        }
+                                    }
+                                    isCurrent -> {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier
+                                                .fillMaxSize()
+                                                .scale(pulseScale),
+                                            color = Blue500,
+                                            strokeWidth = 2.5.dp,
+                                            trackColor = Blue50
+                                        )
+                                    }
+                                    else -> {
+                                        Surface(
+                                            shape = CircleShape,
+                                            color = BackgroundLight,
+                                            border = BorderStroke(1.dp, CardBorder),
+                                            modifier = Modifier.size(18.dp)
+                                        ) {}
+                                    }
                                 }
-                                index == currentStage -> {
-                                    CircularProgressIndicator(
-                                        modifier = Modifier.size(24.dp),
-                                        color = Blue500,
-                                        strokeWidth = 2.dp
-                                    )
-                                    Spacer(modifier = Modifier.width(16.dp))
+                            }
+
+                            Spacer(modifier = Modifier.width(14.dp))
+
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = stage.title,
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Medium
+                                    ),
+                                    color = when {
+                                        isCurrent -> Blue500
+                                        isDone -> TextPrimary
+                                        else -> TextSecondary.copy(alpha = 0.6f)
+                                    }
+                                )
+                                if (isCurrent) {
                                     Text(
-                                        text = stage,
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color = Blue500,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                                else -> {
-                                    Surface(
-                                        modifier = Modifier.size(24.dp),
-                                        shape = CircleShape,
-                                        color = Color.Transparent,
-                                        border = BorderStroke(2.dp, CardBorder)
-                                    ) {}
-                                    Spacer(modifier = Modifier.width(16.dp))
-                                    Text(
-                                        text = stage,
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        color = TextSecondary
+                                        text = stage.description,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = TextSecondary,
+                                        lineHeight = 14.sp
                                     )
                                 }
                             }
@@ -193,13 +316,16 @@ fun AnalysisProgressScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(12.dp))
 
+            // Cancel Action Button
             OutlinedButton(
                 onClick = onBack,
+                shape = RoundedCornerShape(12.dp),
+                border = BorderStroke(1.dp, CardBorder),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Cancel")
+                Text("Cancel Analysis", color = TextSecondary)
             }
         }
     }
