@@ -13,7 +13,7 @@ import numpy as np
 from fusion.feature_schema import MorphologyFeatureVector, MORPHOLOGY_FEATURE_KEYS
 from fusion.feature_loader import FeatureLoader
 
-from .qdrant_matcher import QdrantReferenceMatcher
+from .qdrant_matcher import QdrantReferenceMatcher, QDRANT_AVAILABLE
 
 logger = logging.getLogger(__name__)
 
@@ -30,12 +30,14 @@ class ReferenceMatchItem(BaseModel):
 
 class ReferenceComparisonResult(BaseModel):
     label: str = "REFERENCE-BASED INSIGHT"
+    is_available: bool = True
     top_category: str
     top_similarity_percent: float
     top_match_id: str
     comparisons: List[ReferenceMatchItem]
     clinical_insight: str
-    retrieval_engine: str = "Qdrant Vector Database"
+    retrieval_engine: str = "Qdrant Vector Database" if QDRANT_AVAILABLE else "Local In-Memory Vector Search Engine"
+    active_database: str = "outputs/reference_cases"
 
 
 class ReferenceMatcher:

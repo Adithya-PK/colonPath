@@ -70,11 +70,27 @@ class EvidenceBuilder:
         # Format Reference Comparison
         reference_data = {
             "label": reference_result.label,
+            "is_available": getattr(reference_result, "is_available", True),
+            "retrieval_engine": getattr(reference_result, "retrieval_engine", "Local In-Memory Vector Search Engine"),
+            "active_database": getattr(reference_result, "active_database", "outputs/reference_cases"),
             "top_category": reference_result.top_category,
             "top_similarity_percent": reference_result.top_similarity_percent,
             "top_reference_id": reference_result.top_match_id,
             "insight": reference_result.clinical_insight,
             "comparisons": [c.model_dump() for c in reference_result.comparisons[:3]],
+        }
+
+        # Model Performance Metadata (distinct from single-case prediction confidence)
+        model_performance_metadata = {
+            "evaluation_dataset": "NCT-CRC-HE-100K (45 held-out test patches)",
+            "multiclass_accuracy": 0.6444,
+            "multiclass_macro_f1": 0.5041,
+            "multiclass_macro_precision": 0.6130,
+            "multiclass_macro_recall": 0.5046,
+            "binary_tumor_accuracy": 1.0,
+            "expected_calibration_error_ece": 0.1570,
+            "brier_score": 0.4966,
+            "source": "results/metrics.json",
         }
 
         case_result = {
@@ -119,6 +135,7 @@ class EvidenceBuilder:
             "gland_evidence": gland_evidence,
             "reference_comparison": reference_data,
             "priority_regions": [r.model_dump() for r in priority_regions],
+            "model_performance_metadata": model_performance_metadata,
             "visualizations": {
                 vis_type: f"/cases/{case_id}/visualization/{vis_type}"
                 for vis_type in ["original", "glands", "nuclei", "regions", "uncertainty", "top_regions", "pseudo_3d"]
