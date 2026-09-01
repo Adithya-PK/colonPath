@@ -4,6 +4,19 @@ import shutil
 from collections import OrderedDict
 
 import numpy as np
+
+# NumPy 2.0 compatibility shim for imgaug
+if not hasattr(np, "sctypes"):
+    np.sctypes = {
+        "int": [np.int8, np.int16, np.int32, np.int64],
+        "uint": [np.uint8, np.uint16, np.uint32, np.uint64],
+        "float": [np.float16, np.float32, np.float64],
+        "complex": [np.complex64, np.complex128],
+        "others": [bool, object, bytes, str, np.void],
+    }
+if not hasattr(np.lib, "pad"):
+    np.lib.pad = np.pad
+
 import torch
 import torch.nn as nn
 from imgaug import imgaug as ia

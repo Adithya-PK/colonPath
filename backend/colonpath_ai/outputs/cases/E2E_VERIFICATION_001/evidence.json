@@ -1,7 +1,7 @@
 {
   "case_id": "E2E_VERIFICATION_001",
-  "timestamp": "2026-09-01T06:32:08.859091+00:00",
-  "prediction_class": "LYM",
+  "timestamp": "2026-09-01T09:48:18.001242+00:00",
+  "prediction_class": "STR",
   "prediction_confidence": 1.0,
   "calibrated_confidence": 1.0,
   "tumor_probability": 0.0,
@@ -19,8 +19,8 @@
   "priority_regions_count": 4,
   "region_ids": [
     "R_03",
-    "R_01",
     "R_02",
+    "R_01",
     "R_04"
   ]
 }

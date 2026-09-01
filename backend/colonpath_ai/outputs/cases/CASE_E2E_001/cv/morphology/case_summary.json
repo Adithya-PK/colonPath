@@ -1,0 +1,25 @@
+{
+  "case_id": "CASE_E2E_001",
+  "nuclei": {
+    "total": 95,
+    "types": {
+      "1": 4,
+      "2": 0,
+      "3": 83,
+      "4": 8
+    },
+    "mean_area_px2": 138.2157894736842,
+    "mean_perimeter_px": 49.51717351235841,
+    "mean_eccentricity": 0.7377483553965755,
+    "mean_circularity": 0.6896451788092522
+  },
+  "glands": {
+    "total": 10,
+    "mean_area_pixels": 2421.5,
+    "mean_perimeter_pixels": 253.37728484869004,
+    "mean_width_pixels": 59.3,
+    "mean_height_pixels": 61.5,
+    "mean_aspect_ratio": 1.3304954870887225,
+    "mean_circularity": 0.5441721218961508
+  }
+}

@@ -24,20 +24,39 @@ class CaseService:
         image_path: Path,
         case_id: Optional[str] = None,
     ) -> Dict[str, Any]:
-        # Check for matching morphology CSVs in outputs if they exist
+        """
+        Dynamically executes full CV pipeline (U-Net, HoVer-Net, Morphometry)
+        on the uploaded image and passes case-isolated artifacts to orchestrator.
+        """
         cid = case_id or image_path.stem
-        nuclei_csv = PROJECT_ROOT / "outputs" / "morphology" / "nuclei_measurements.csv"
-        glands_csv = PROJECT_ROOT / "outputs" / "morphology" / "gland_measurements.csv"
-        gland_mask = PROJECT_ROOT / "outputs" / "unet" / "testA_1_prediction.png"
-        nuclei_overlay = PROJECT_ROOT / "outputs" / "hovernet_test" / "result" / "overlay" / "00000.png"
+        case_output_dir = PROJECT_ROOT / "outputs" / "cases" / cid
+        case_output_dir.mkdir(parents=True, exist_ok=True)
+
+        # Import unified CV pipeline runner dynamically
+        import sys
+        WORKSPACE_ROOT = PROJECT_ROOT.parent.parent if PROJECT_ROOT.name == "colonpath_ai" else PROJECT_ROOT.parent
+        cv_dir = WORKSPACE_ROOT / "cv"
+        if str(cv_dir) not in sys.path:
+            sys.path.insert(0, str(cv_dir))
+
+        try:
+            from cv_pipeline import run_cv_pipeline
+            cv_res = run_cv_pipeline(image_path=image_path, case_id=cid, output_dir=case_output_dir)
+            artifacts = cv_res.get("artifacts", {})
+            nuclei_csv = Path(artifacts["nuclei_csv_path"])
+            glands_csv = Path(artifacts["glands_csv_path"])
+            gland_mask = Path(artifacts["gland_mask_path"])
+            nuclei_overlay = Path(artifacts["nuclei_overlay_path"])
+        except Exception as e:
+            raise RuntimeError(f"Dynamic Computer Vision execution failed for case '{cid}': {str(e)}")
 
         result = self.orchestrator.run(
             image_path=image_path,
             case_id=cid,
-            nuclei_csv=nuclei_csv if nuclei_csv.exists() else None,
-            glands_csv=glands_csv if glands_csv.exists() else None,
-            gland_mask_path=gland_mask if gland_mask.exists() else None,
-            nuclei_overlay_path=nuclei_overlay if nuclei_overlay.exists() else None,
+            nuclei_csv=nuclei_csv,
+            glands_csv=glands_csv,
+            gland_mask_path=gland_mask,
+            nuclei_overlay_path=nuclei_overlay,
         )
         return result
 

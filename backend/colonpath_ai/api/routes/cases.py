@@ -52,15 +52,20 @@ def get_case_visualization(case_id: str, vis_type: str):
     if not result:
         raise HTTPException(status_code=404, detail=f"Case '{case_id}' not found.")
 
-    visualizations = result.get("visualizations", {})
-    if vis_type not in visualizations:
-        valid_types = list(visualizations.keys()) or ["original", "glands", "nuclei", "regions", "uncertainty", "top_regions", "pseudo_3d"]
-        raise HTTPException(status_code=404, detail=f"Visualization '{vis_type}' not found. Available: {valid_types}")
+    PROJECT_ROOT = Path(__file__).resolve().parents[2]
+    candidates = [
+        PROJECT_ROOT / "outputs" / "cases" / case_id / "visualizations" / f"{vis_type}.png",
+        PROJECT_ROOT / "outputs" / "visualizations" / case_id / f"{vis_type}.png",
+        PROJECT_ROOT / "outputs" / "cases" / case_id / "cv" / "unet" / "gland_mask.png" if vis_type == "glands" else None,
+        PROJECT_ROOT / "outputs" / "cases" / case_id / "cv" / "hovernet" / "nuclei_overlay.png" if vis_type == "nuclei" else None,
+    ]
 
-    file_path = Path(visualizations[vis_type])
-    if not file_path.exists():
-        raise HTTPException(status_code=404, detail=f"Visualization file on disk not found: {file_path}")
-    return FileResponse(file_path, media_type="image/png")
+    for cand in candidates:
+        if cand and cand.exists():
+            return FileResponse(str(cand), media_type="image/png")
+
+    valid_types = ["original", "glands", "nuclei", "regions", "uncertainty", "top_regions", "pseudo_3d"]
+    raise HTTPException(status_code=404, detail=f"Visualization '{vis_type}' for case '{case_id}' not found on disk. Available: {valid_types}")
 
 
 @router.get("/{case_id}/evidence", response_model=Dict[str, Any])

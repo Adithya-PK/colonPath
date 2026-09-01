@@ -117,8 +117,14 @@ class FeatureLoader:
         n_ecc = 0.0
         n_circ = 0.0
 
-        if nuclei_csv and Path(nuclei_csv).exists():
-            ndf = pd.read_csv(nuclei_csv)
+        if not nuclei_csv and not glands_csv:
+            raise ValueError(f"No morphology CSV files provided for case '{case_id}'.")
+
+        if nuclei_csv:
+            p_nuc = Path(nuclei_csv)
+            if not p_nuc.exists():
+                raise FileNotFoundError(f"Nuclear measurements CSV not found for case '{case_id}': {p_nuc}")
+            ndf = pd.read_csv(p_nuc)
             n_total = len(ndf)
             if n_total > 0:
                 if "type" in ndf.columns:
@@ -140,8 +146,11 @@ class FeatureLoader:
         g_ar = 0.0
         g_circ = 0.0
 
-        if glands_csv and Path(glands_csv).exists():
-            gdf = pd.read_csv(glands_csv)
+        if glands_csv:
+            p_gland = Path(glands_csv)
+            if not p_gland.exists():
+                raise FileNotFoundError(f"Gland measurements CSV not found for case '{case_id}': {p_gland}")
+            gdf = pd.read_csv(p_gland)
             g_total = len(gdf)
             if g_total > 0:
                 g_area = float(gdf["area_pixels"].mean()) if "area_pixels" in gdf.columns else 0.0

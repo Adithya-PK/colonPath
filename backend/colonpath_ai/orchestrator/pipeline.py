@@ -122,12 +122,7 @@ class CaseOrchestrator:
         if nuclei_csv or glands_csv:
             morphology = FeatureLoader.from_measurements(cid, nuclei_csv=nuclei_csv, glands_csv=glands_csv)
         else:
-            # Check default output paths or load standard sample
-            default_fv = OUTPUT_DIR / "morphology" / "feature_vector.json"
-            if default_fv.exists():
-                morphology = FeatureLoader.load_feature_vector(default_fv)
-            else:
-                morphology = MorphologyFeatureVector(case_id=cid)
+            raise ValueError(f"No morphology measurements provided for case '{cid}'. Dynamic CV execution is required.")
 
         # 4. Multimodal Fusion & Classification
         logger.info("Step 4/9: Multimodal Feature Fusion & Classification")

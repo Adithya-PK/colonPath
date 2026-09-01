@@ -1,0 +1,235 @@
+{
+  "case_id": "CASE_VERIFY_001",
+  "timestamp": "2026-09-01T09:32:29.644664+00:00",
+  "status": "completed",
+  "image_quality": {
+    "passed": true,
+    "resolution": "256x256",
+    "blur_laplacian_variance": 3031.96,
+    "blur_status": "ACCEPTABLE",
+    "mean_brightness": 184.52,
+    "brightness_status": "ACCEPTABLE",
+    "contrast_std": 45.26,
+    "contrast_status": "ACCEPTABLE",
+    "mean_saturation": 98.55
+  },
+  "digepath": {
+    "model_name": "Digepath",
+    "architecture": "ViT-L/16",
+    "embedding_dimension": 1024,
+    "device": "cpu",
+    "status": "active"
+  },
+  "prediction": {
+    "class": "ADI",
+    "confidence": 0.9997,
+    "calibrated_confidence": 0.9985,
+    "tumor_probability": 0.0,
+    "binary_class": "NON-TUM",
+    "multiclass_probabilities": {
+      "ADI": 0.9997205138206482,
+      "BACK": 3.3582650190960685e-38,
+      "DEB": 4.784423519752252e-19,
+      "LYM": 1.0120908906358038e-24,
+      "MUC": 1.7355496226135944e-18,
+      "MUS": 5.635120554000147e-29,
+      "NORM": 0.0002720358606893569,
+      "STR": 7.375958375632763e-06,
+      "TUM": 1.1323896148840662e-25
+    }
+  },
+  "uncertainty": {
+    "score": 0.0043,
+    "level": "LOW",
+    "entropy": 0.0114,
+    "normalized_entropy": 0.0052,
+    "ood_score": 1.0,
+    "ood_status": "IN_DISTRIBUTION",
+    "is_ood": false,
+    "review_required": false,
+    "message": "AI-assisted classification ready for review."
+  },
+  "model_agreement": {
+    "level": "MEDIUM",
+    "score": 0.5,
+    "concordant_sources": [
+      "Gland Morphology (Regular glands align with non-tumor prediction)",
+      "Digepath Visual Classifier (ADI aligns with Fusion ADI)"
+    ],
+    "discordant_sources": [
+      "Nuclear Morphology (Pleomorphism conflicts with non-tumor prediction)",
+      "Reference Comparison (Top match 'adenocarcinoma' diverges from prediction)"
+    ],
+    "summary": "Moderate agreement: Partial alignment on ADI, with minor morphological or reference variance."
+  },
+  "nuclear_evidence": {
+    "total_count": 117,
+    "type_counts": {
+      "epithelial": 3,
+      "inflammatory": 0,
+      "spindle_shaped": 110,
+      "miscellaneous": 4
+    },
+    "mean_area_px2": 138.53,
+    "mean_perimeter_px": 49.67,
+    "mean_eccentricity": 0.754,
+    "mean_circularity": 0.688,
+    "interpretation": "Nuclear pleomorphism detected: 117 nuclei, high mean area (138.5 px\u00b2)."
+  },
+  "gland_evidence": {
+    "total_count": 10,
+    "mean_area_pixels": 2421.5,
+    "mean_perimeter_pixels": 253.38,
+    "mean_width_pixels": 59.3,
+    "mean_height_pixels": 61.5,
+    "mean_aspect_ratio": 1.33,
+    "mean_circularity": 0.544,
+    "interpretation": "Regular glandular architecture: 10 glands, circularity (0.54)."
+  },
+  "reference_comparison": {
+    "label": "REFERENCE-BASED INSIGHT",
+    "top_category": "adenocarcinoma",
+    "top_similarity_percent": 76.1,
+    "top_reference_id": "reference_001",
+    "insight": "Morphological profile demonstrates 76.1% feature similarity with curated 'adenocarcinoma' reference (reference_001).",
+    "comparisons": [
+      {
+        "reference_id": "reference_001",
+        "category": "adenocarcinoma",
+        "normalized_distance": 0.239,
+        "similarity_percent": 76.1,
+        "key_concordant_features": [
+          "nuclei_total",
+          "nuclei_type_1",
+          "nuclei_type_2",
+          "nuclei_type_3"
+        ]
+      },
+      {
+        "reference_id": "reference_001",
+        "category": "adenoma",
+        "normalized_distance": 0.239,
+        "similarity_percent": 76.1,
+        "key_concordant_features": [
+          "nuclei_total",
+          "nuclei_type_1",
+          "nuclei_type_2",
+          "nuclei_type_3"
+        ]
+      },
+      {
+        "reference_id": "reference_001",
+        "category": "normal",
+        "normalized_distance": 0.239,
+        "similarity_percent": 76.1,
+        "key_concordant_features": [
+          "nuclei_total",
+          "nuclei_type_1",
+          "nuclei_type_2",
+          "nuclei_type_3"
+        ]
+      }
+    ]
+  },
+  "priority_regions": [
+    {
+      "region_id": "R_03",
+      "index": 3,
+      "x": 0,
+      "y": 128,
+      "width": 128,
+      "height": 128,
+      "prediction": "ADI",
+      "confidence": 0.9999920129776001,
+      "tumor_probability": 1.2611686178923354e-44,
+      "uncertainty_score": 0.0003034514363873293,
+      "uncertainty_level": "LOW",
+      "priority_score": 0.12304551771545809,
+      "priority_level": "LOW",
+      "priority_label": "AI-prioritized region",
+      "nuclei_count": 37,
+      "glands_count": 0,
+      "agreement_level": "HIGH",
+      "rationale": "Low AI priority with regular morphological patterns."
+    },
+    {
+      "region_id": "R_02",
+      "index": 2,
+      "x": 128,
+      "y": 0,
+      "width": 128,
+      "height": 128,
+      "prediction": "ADI",
+      "confidence": 0.9999918937683105,
+      "tumor_probability": 1.2611686178923354e-44,
+      "uncertainty_score": 0.0003086958377657407,
+      "uncertainty_level": "LOW",
+      "priority_score": 0.09004630437566485,
+      "priority_level": "LOW",
+      "priority_label": "AI-prioritized region",
+      "nuclei_count": 30,
+      "glands_count": 0,
+      "agreement_level": "HIGH",
+      "rationale": "Low AI priority with regular morphological patterns."
+    },
+    {
+      "region_id": "R_01",
+      "index": 1,
+      "x": 0,
+      "y": 0,
+      "width": 128,
+      "height": 128,
+      "prediction": "ADI",
+      "confidence": 0.9999920129776001,
+      "tumor_probability": 1.2611686178923354e-44,
+      "uncertainty_score": 0.00030318131039421686,
+      "uncertainty_level": "LOW",
+      "priority_score": 0.09004547719655913,
+      "priority_level": "LOW",
+      "priority_label": "AI-prioritized region",
+      "nuclei_count": 26,
+      "glands_count": 1,
+      "agreement_level": "HIGH",
+      "rationale": "Low AI priority with regular morphological patterns."
+    },
+    {
+      "region_id": "R_04",
+      "index": 4,
+      "x": 128,
+      "y": 128,
+      "width": 128,
+      "height": 128,
+      "prediction": "ADI",
+      "confidence": 0.9999920129776001,
+      "tumor_probability": 1.2611686178923354e-44,
+      "uncertainty_score": 0.0003036194189809539,
+      "uncertainty_level": "LOW",
+      "priority_score": 0.08404554291284715,
+      "priority_level": "LOW",
+      "priority_label": "AI-prioritized region",
+      "nuclei_count": 24,
+      "glands_count": 0,
+      "agreement_level": "HIGH",
+      "rationale": "Low AI priority with regular morphological patterns."
+    }
+  ],
+  "visualizations": {
+    "original": "/cases/CASE_VERIFY_001/visualization/original",
+    "glands": "/cases/CASE_VERIFY_001/visualization/glands",
+    "nuclei": "/cases/CASE_VERIFY_001/visualization/nuclei",
+    "regions": "/cases/CASE_VERIFY_001/visualization/regions",
+    "uncertainty": "/cases/CASE_VERIFY_001/visualization/uncertainty",
+    "top_regions": "/cases/CASE_VERIFY_001/visualization/top_regions",
+    "pseudo_3d": "/cases/CASE_VERIFY_001/visualization/pseudo_3d"
+  },
+  "limitations": [
+    "Research prototype for decision support; not an autonomous diagnostic device.",
+    "Pathologist review recommended for all clinical correlations and staging.",
+    "Visual and morphological features are AI-derived computational estimates."
+  ],
+  "explanation": {
+    "text": "AI-assisted classification suggests **ADI** with 99.9% calibrated confidence.\nNuclear Analysis: 117 nuclei detected (mean area: 138.5 px\u00b2).\nGland Analysis: 10 glandular structures segmented (mean circularity: 0.54).\nModel Agreement: MEDIUM agreement across computational models.\nReference Match: 76.1% similarity to curated 'adenocarcinoma' reference cohort.\nTop AI-Prioritized Region: R_03 (Priority Score: 0.12) located at (x=0, y=128).",
+    "validated": true,
+    "validation_errors": []
+  }
+}

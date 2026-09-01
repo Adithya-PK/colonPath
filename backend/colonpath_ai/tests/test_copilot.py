@@ -3,14 +3,22 @@ Comprehensive Unit Tests for MedGemma Pathologist Copilot Q&A.
 Verifies that the Copilot accurately answers inquiries across all clinical domains.
 """
 
+from pathlib import Path
 from fastapi.testclient import TestClient
 from api.main import app
 
 client = TestClient(app)
 CASE_ID = "CASE_DEMO_00000"
+TEST_IMAGE = Path(__file__).resolve().parents[1] / "outputs" / "hovernet_test" / "input" / "00000.png"
+if not TEST_IMAGE.exists():
+    TEST_IMAGE = Path(__file__).resolve().parents[3] / "source_material" / "sample_imgs" / "00000.png"
 
 
 def test_copilot_all_pathologist_questions():
+    # Pre-populate case if not already present
+    if TEST_IMAGE.exists():
+        with open(TEST_IMAGE, "rb") as f:
+            client.post("/analyze", files={"image": ("00000.png", f, "image/png")}, data={"case_id": CASE_ID})
     test_questions = [
         ("Why was region R_03 prioritized?", "Priority Score"),
         ("What is the AI prediction and tumor probability?", "calibrated confidence"),

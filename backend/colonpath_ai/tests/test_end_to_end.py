@@ -54,11 +54,13 @@ def test_end_to_end_pipeline():
     assert (case_dir / "case_result.json").exists()
     assert (case_dir / "evidence.json").exists()
 
-    # 3. Verify all 7 genuine visualizations were rendered
+    # 3. Verify all 7 genuine visualizations were rendered and mapped to HTTP endpoints
     vis = result["visualizations"]
+    vis_disk_dir = Path(__file__).resolve().parents[1] / "outputs" / "visualizations" / case_id
     for vis_type in ["original", "glands", "nuclei", "regions", "uncertainty", "top_regions", "pseudo_3d"]:
         assert vis_type in vis
-        assert Path(vis[vis_type]).exists()
+        assert vis[vis_type] == f"/cases/{case_id}/visualization/{vis_type}"
+        assert (vis_disk_dir / f"{vis_type}.png").exists()
 
     # 4. Verify evidence explanation validation
     assert "explanation" in result

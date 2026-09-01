@@ -119,7 +119,10 @@ class EvidenceBuilder:
             "gland_evidence": gland_evidence,
             "reference_comparison": reference_data,
             "priority_regions": [r.model_dump() for r in priority_regions],
-            "visualizations": visualizations or {},
+            "visualizations": {
+                vis_type: f"/cases/{case_id}/visualization/{vis_type}"
+                for vis_type in ["original", "glands", "nuclei", "regions", "uncertainty", "top_regions", "pseudo_3d"]
+            },
             "limitations": [
                 "Research prototype for decision support; not an autonomous diagnostic device.",
                 "Pathologist review recommended for all clinical correlations and staging.",

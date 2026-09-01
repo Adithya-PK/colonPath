@@ -1,6 +1,6 @@
 {
   "case_id": "E2E_VERIFICATION_001",
-  "timestamp": "2026-09-01T06:32:08.859091+00:00",
+  "timestamp": "2026-09-01T09:48:18.001242+00:00",
   "status": "completed",
   "image_quality": {
     "passed": true,
@@ -17,11 +17,11 @@
     "model_name": "Digepath",
     "architecture": "ViT-L/16",
     "embedding_dimension": 1024,
-    "device": "cuda",
+    "device": "cpu",
     "status": "active"
   },
   "prediction": {
-    "class": "LYM",
+    "class": "STR",
     "confidence": 1.0,
     "calibrated_confidence": 1.0,
     "tumor_probability": 0.0,
@@ -30,19 +30,19 @@
       "ADI": 0.0,
       "BACK": 0.0,
       "DEB": 0.0,
-      "LYM": 1.0,
+      "LYM": 0.0,
       "MUC": 0.0,
       "MUS": 0.0,
       "NORM": 0.0,
-      "STR": 0.0,
+      "STR": 1.0,
       "TUM": 0.0
     }
   },
   "uncertainty": {
     "score": 0.0,
     "level": "LOW",
-    "entropy": -0.0,
-    "normalized_entropy": -0.0,
+    "entropy": 0.0,
+    "normalized_entropy": 0.0,
     "ood_score": 1.0,
     "ood_status": "IN_DISTRIBUTION",
     "is_ood": false,
@@ -53,14 +53,14 @@
     "level": "LOW",
     "score": 0.25,
     "concordant_sources": [
-      "Digepath Visual Classifier (LYM aligns with Fusion LYM)"
+      "Digepath Visual Classifier (STR aligns with Fusion STR)"
     ],
     "discordant_sources": [
       "Nuclear Morphology (Pleomorphism conflicts with non-tumor prediction)",
       "Gland Morphology (Architectural distortion conflicts with non-tumor prediction)",
       "Reference Comparison (Top match 'adenocarcinoma' diverges from prediction)"
     ],
-    "summary": "Low agreement / Evidence Conflict: Discrepancy detected between visual classification (LYM) and morphological measurements."
+    "summary": "Low agreement / Evidence Conflict: Discrepancy detected between visual classification (STR) and morphological measurements."
   },
   "nuclear_evidence": {
     "total_count": 117,
@@ -139,15 +139,35 @@
       "y": 128,
       "width": 128,
       "height": 128,
-      "prediction": "LYM",
+      "prediction": "STR",
       "confidence": 1.0,
-      "tumor_probability": 0.0,
-      "uncertainty_score": 0.0,
+      "tumor_probability": 3.5335279841008926e-11,
+      "uncertainty_score": 9.040301788836485e-08,
       "uncertainty_level": "LOW",
-      "priority_score": 0.12299999999999998,
+      "priority_score": 0.12300001357635354,
       "priority_level": "LOW",
       "priority_label": "AI-prioritized region",
       "nuclei_count": 37,
+      "glands_count": 0,
+      "agreement_level": "HIGH",
+      "rationale": "Low AI priority with regular morphological patterns."
+    },
+    {
+      "region_id": "R_02",
+      "index": 2,
+      "x": 128,
+      "y": 0,
+      "width": 128,
+      "height": 128,
+      "prediction": "STR",
+      "confidence": 1.0,
+      "tumor_probability": 3.557222919003955e-11,
+      "uncertainty_score": 9.06973429788127e-08,
+      "uncertainty_level": "LOW",
+      "priority_score": 0.09000001362060894,
+      "priority_level": "LOW",
+      "priority_label": "AI-prioritized region",
+      "nuclei_count": 30,
       "glands_count": 0,
       "agreement_level": "HIGH",
       "rationale": "Low AI priority with regular morphological patterns."
@@ -159,36 +179,16 @@
       "y": 0,
       "width": 128,
       "height": 128,
-      "prediction": "LYM",
+      "prediction": "STR",
       "confidence": 1.0,
-      "tumor_probability": 0.0,
-      "uncertainty_score": 0.0,
+      "tumor_probability": 3.5583765101154796e-11,
+      "uncertainty_score": 8.981735813366959e-08,
       "uncertainty_level": "LOW",
-      "priority_score": 0.09,
+      "priority_score": 0.0900000134886164,
       "priority_level": "LOW",
       "priority_label": "AI-prioritized region",
       "nuclei_count": 26,
       "glands_count": 1,
-      "agreement_level": "HIGH",
-      "rationale": "Low AI priority with regular morphological patterns."
-    },
-    {
-      "region_id": "R_02",
-      "index": 2,
-      "x": 128,
-      "y": 0,
-      "width": 128,
-      "height": 128,
-      "prediction": "LYM",
-      "confidence": 1.0,
-      "tumor_probability": 0.0,
-      "uncertainty_score": 0.0,
-      "uncertainty_level": "LOW",
-      "priority_score": 0.09,
-      "priority_level": "LOW",
-      "priority_label": "AI-prioritized region",
-      "nuclei_count": 30,
-      "glands_count": 0,
       "agreement_level": "HIGH",
       "rationale": "Low AI priority with regular morphological patterns."
     },
@@ -199,12 +199,12 @@
       "y": 128,
       "width": 128,
       "height": 128,
-      "prediction": "LYM",
+      "prediction": "STR",
       "confidence": 1.0,
-      "tumor_probability": 0.0,
-      "uncertainty_score": 0.0,
+      "tumor_probability": 3.5240511897516313e-11,
+      "uncertainty_score": 9.018486104789878e-08,
       "uncertainty_level": "LOW",
-      "priority_score": 0.084,
+      "priority_score": 0.0840000135435874,
       "priority_level": "LOW",
       "priority_label": "AI-prioritized region",
       "nuclei_count": 24,
@@ -214,13 +214,13 @@
     }
   ],
   "visualizations": {
-    "original": "C:\\Users\\kthir\\OneDrive\\Desktop\\colon_model\\colonpath_ai\\outputs\\visualizations\\E2E_VERIFICATION_001\\original.png",
-    "glands": "C:\\Users\\kthir\\OneDrive\\Desktop\\colon_model\\colonpath_ai\\outputs\\visualizations\\E2E_VERIFICATION_001\\glands.png",
-    "nuclei": "C:\\Users\\kthir\\OneDrive\\Desktop\\colon_model\\colonpath_ai\\outputs\\visualizations\\E2E_VERIFICATION_001\\nuclei.png",
-    "regions": "C:\\Users\\kthir\\OneDrive\\Desktop\\colon_model\\colonpath_ai\\outputs\\visualizations\\E2E_VERIFICATION_001\\regions.png",
-    "uncertainty": "C:\\Users\\kthir\\OneDrive\\Desktop\\colon_model\\colonpath_ai\\outputs\\visualizations\\E2E_VERIFICATION_001\\uncertainty.png",
-    "top_regions": "C:\\Users\\kthir\\OneDrive\\Desktop\\colon_model\\colonpath_ai\\outputs\\visualizations\\E2E_VERIFICATION_001\\top_regions.png",
-    "pseudo_3d": "C:\\Users\\kthir\\OneDrive\\Desktop\\colon_model\\colonpath_ai\\outputs\\visualizations\\E2E_VERIFICATION_001\\pseudo_3d.png"
+    "original": "/cases/E2E_VERIFICATION_001/visualization/original",
+    "glands": "/cases/E2E_VERIFICATION_001/visualization/glands",
+    "nuclei": "/cases/E2E_VERIFICATION_001/visualization/nuclei",
+    "regions": "/cases/E2E_VERIFICATION_001/visualization/regions",
+    "uncertainty": "/cases/E2E_VERIFICATION_001/visualization/uncertainty",
+    "top_regions": "/cases/E2E_VERIFICATION_001/visualization/top_regions",
+    "pseudo_3d": "/cases/E2E_VERIFICATION_001/visualization/pseudo_3d"
   },
   "limitations": [
     "Research prototype for decision support; not an autonomous diagnostic device.",
@@ -228,7 +228,7 @@
     "Visual and morphological features are AI-derived computational estimates."
   ],
   "explanation": {
-    "text": "AI-assisted classification suggests **LYM** with 100.0% calibrated confidence.\nNuclear Analysis: 117 nuclei detected (mean area: 138.5 px\u00b2).\nGland Analysis: 2 glandular structures segmented (mean circularity: 0.37).\nModel Agreement: LOW agreement across computational models.\nReference Match: 100.0% similarity to curated 'adenocarcinoma' reference cohort.\nTop AI-Prioritized Region: R_03 (Priority Score: 0.12) located at (x=0, y=128).",
+    "text": "AI-assisted classification suggests **STR** with 100.0% calibrated confidence.\nNuclear Analysis: 117 nuclei detected (mean area: 138.5 px\u00b2).\nGland Analysis: 2 glandular structures segmented (mean circularity: 0.37).\nModel Agreement: LOW agreement across computational models.\nReference Match: 100.0% similarity to curated 'adenocarcinoma' reference cohort.\nTop AI-Prioritized Region: R_03 (Priority Score: 0.12) located at (x=0, y=128).",
     "validated": true,
     "validation_errors": []
   }

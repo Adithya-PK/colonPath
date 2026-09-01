@@ -1,7 +1,7 @@
 {
   "case_id": "UNIT_TEST_CASE",
-  "timestamp": "2026-09-01T06:32:06.514566+00:00",
-  "prediction_class": "LYM",
+  "timestamp": "2026-09-01T09:48:09.016776+00:00",
+  "prediction_class": "NORM",
   "prediction_confidence": 1.0,
   "calibrated_confidence": 1.0,
   "tumor_probability": 0.0,
@@ -9,18 +9,18 @@
   "uncertainty_level": "LOW",
   "ood_score": 1.0,
   "ood_status": "IN_DISTRIBUTION",
-  "agreement_level": "LOW",
+  "agreement_level": "MEDIUM",
   "nuclear_total_count": 117,
   "nuclear_mean_area_px2": 138.53,
-  "gland_total_count": 2,
-  "gland_mean_circularity": 0.367,
+  "gland_total_count": 7,
+  "gland_mean_circularity": 0.489,
   "reference_top_category": "adenocarcinoma",
-  "reference_top_similarity_percent": 100.0,
+  "reference_top_similarity_percent": 78.29,
   "priority_regions_count": 4,
   "region_ids": [
     "R_03",
-    "R_01",
     "R_02",
+    "R_01",
     "R_04"
   ]
 }

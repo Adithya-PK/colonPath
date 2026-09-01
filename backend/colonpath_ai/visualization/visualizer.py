@@ -48,7 +48,7 @@ class CaseVisualizer:
 
         # 1. Original Image
         orig_path = case_dir / "original.png"
-        img_orig.save(orig_path)
+        img_orig.save(str(orig_path))
         paths["original"] = str(orig_path)
 
         # 2. Gland Segmentation Overlay
@@ -68,53 +68,32 @@ class CaseVisualizer:
                     break
 
         if g_mask_file and g_mask_file.exists():
-            gland_mask = cv2.imread(str(g_mask_file), cv2.IMREAD_GRAYSCALE)
-            img_np = np.array(img_orig)
-            overlay = img_np.copy()
-            if gland_mask is not None:
-                resized_mask = cv2.resize(gland_mask, (img_orig.width, img_orig.height), interpolation=cv2.INTER_NEAREST)
-                contours, _ = cv2.findContours(resized_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-                cv2.drawContours(overlay, contours, -1, (0, 255, 0), 2)
-                blended = cv2.addWeighted(img_np, 0.65, overlay, 0.35, 0)
-                Image.fromarray(blended).save(gland_path)
-            else:
-                img_orig.save(gland_path)
+            g_mask = Image.open(g_mask_file).convert("L").resize(img_orig.size, Image.Resampling.NEAREST)
+            g_mask_arr = np.array(g_mask)
+            overlay = np.array(img_orig).copy()
+            # Green tint for segmented glandular epithelium
+            overlay[g_mask_arr > 127] = [0, 200, 50]
+            img_gland = Image.fromarray(cv2.addWeighted(np.array(img_orig), 0.6, overlay, 0.4, 0))
+            img_gland.save(str(gland_path))
         else:
-            # Generate adaptive morphological gland contour overlay
-            img_np = np.array(img_orig)
-            gray = cv2.cvtColor(img_np, cv2.COLOR_RGB2GRAY)
-            _, thresh = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY)
-            contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-            overlay = img_np.copy()
-            cv2.drawContours(overlay, contours, -1, (0, 255, 0), 2)
-            blended = cv2.addWeighted(img_np, 0.7, overlay, 0.3, 0)
-            Image.fromarray(blended).save(gland_path)
+            img_orig.save(str(gland_path))
         paths["glands"] = str(gland_path)
 
-        # 3. Nuclear Segmentation Overlay
+        # 3. Nuclear Phenotyping Overlay
         nuc_path = case_dir / "nuclei.png"
-        n_overlay_file = None
+        n_over_file = None
         if nuclei_overlay_path and Path(nuclei_overlay_path).exists():
-            n_overlay_file = Path(nuclei_overlay_path)
+            n_over_file = Path(nuclei_overlay_path)
         else:
-            # Check default HoVer-Net overlay locations
-            hovernet_candidates = [
-                PROJECT_ROOT / "outputs" / "hovernet_test" / "result" / "overlay" / f"{case_id}.png",
-                PROJECT_ROOT / "outputs" / "hovernet_test" / "result" / "overlay" / "00000.png",
-                PROJECT_ROOT / "outputs" / "hovernet_all" / "overlay" / "00000.png",
-            ]
-            for cand in hovernet_candidates:
-                if cand.exists():
-                    n_overlay_file = cand
-                    break
+            default_nuc = PROJECT_ROOT / "outputs" / "hovernet_test" / "result" / "overlay" / "00000.png"
+            if default_nuc.exists():
+                n_over_file = default_nuc
 
-        if n_overlay_file and n_overlay_file.exists():
-            nuc_img = Image.open(n_overlay_file).convert("RGB")
-            if nuc_img.size != (img_orig.width, img_orig.height):
-                nuc_img = nuc_img.resize((img_orig.width, img_orig.height), Image.Resampling.BILINEAR)
-            nuc_img.save(nuc_path)
+        if n_over_file and n_over_file.exists():
+            img_nuc = Image.open(n_over_file).convert("RGB").resize(img_orig.size, Image.Resampling.BILINEAR)
+            img_nuc.save(str(nuc_path))
         else:
-            img_orig.save(nuc_path)
+            img_orig.save(str(nuc_path))
         paths["nuclei"] = str(nuc_path)
 
         # 4. AI-Prioritized Regions Overlay
@@ -138,7 +117,7 @@ class CaseVisualizer:
             draw.rectangle([x, y, x + len(lbl) * 7 + 4, y + 15], fill=color)
             draw.text((x + 2, y + 1), lbl, fill=(255, 255, 255))
 
-        img_reg.save(reg_path)
+        img_reg.save(str(reg_path))
         paths["regions"] = str(reg_path)
 
         # 5. Uncertainty Map Overlay
@@ -154,7 +133,7 @@ class CaseVisualizer:
 
         img_base = np.array(img_orig)
         blended_unc = cv2.addWeighted(img_base, 0.65, unc_overlay, 0.35, 0)
-        Image.fromarray(blended_unc).save(unc_path)
+        Image.fromarray(blended_unc).save(str(unc_path))
         paths["uncertainty"] = str(unc_path)
 
         # 6. Top-K Prioritized Region Crops
@@ -171,9 +150,9 @@ class CaseVisualizer:
                 header = f"{r.region_id} ({r.priority_level}) {r.prediction} {r.confidence:.2f}"
                 c_draw.text((idx * crop_w + 5, 8), header, fill=(0, 0, 0))
 
-            collage.save(top_path)
+            collage.save(str(top_path))
         else:
-            img_orig.save(top_path)
+            img_orig.save(str(top_path))
         paths["top_regions"] = str(top_path)
 
         # 7. Pseudo-3D Visualization

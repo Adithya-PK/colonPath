@@ -1,0 +1,26 @@
+{
+  "case_id": "CASE_P3_00000",
+  "timestamp": "2026-09-01T15:20:47.333746+00:00",
+  "prediction_class": "TUM",
+  "prediction_confidence": 0.9992,
+  "calibrated_confidence": 0.9967,
+  "tumor_probability": 1.0,
+  "uncertainty_score": 0.0086,
+  "uncertainty_level": "LOW",
+  "ood_score": 1.0,
+  "ood_status": "IN_DISTRIBUTION",
+  "agreement_level": "MEDIUM",
+  "nuclear_total_count": 117,
+  "nuclear_mean_area_px2": 138.53,
+  "gland_total_count": 7,
+  "gland_mean_circularity": 0.489,
+  "reference_top_category": "adenocarcinoma",
+  "reference_top_similarity_percent": 78.29,
+  "priority_regions_count": 4,
+  "region_ids": [
+    "R_03",
+    "R_02",
+    "R_01",
+    "R_04"
+  ]
+}
