@@ -25,7 +25,7 @@ fun AnalysisResultScreen(
     onComparison: () -> Unit,
     onReport: () -> Unit
 ) {
-    var selectedImageMode by remember { mutableStateOf("Original") }
+    var selectedImageMode by remember { mutableStateOf("Overlay") }
     var isCaseSaved by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
@@ -93,11 +93,15 @@ fun AnalysisResultScreen(
             }
 
             item {
-                SectionHeader("Analyzed Image")
+                SectionHeader(
+                    title = "Analyzed Specimen & AI Overlays",
+                    subtitle = "Interactive multi-layer view of detected histology features"
+                )
+                Spacer(modifier = Modifier.height(4.dp))
                 ImageViewer(
                     selectedMode = selectedImageMode,
                     onModeChange = { selectedImageMode = it },
-                    modifier = Modifier.height(250.dp)
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
 
