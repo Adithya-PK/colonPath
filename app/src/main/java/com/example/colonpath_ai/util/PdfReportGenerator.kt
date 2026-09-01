@@ -1,12 +1,14 @@
 package com.example.colonpath_ai.util
 
 import android.content.Context
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
+import com.example.colonpath_ai.R
 import com.example.colonpath_ai.model.AnalysisResult
 import java.io.File
 import java.io.FileOutputStream
@@ -82,16 +84,34 @@ object PdfReportGenerator {
             
             y += 70f
 
-            // Image Quality & Acquisition Box
-            canvas.drawText("Image Quality & Acquisition", leftMargin, y + 10f, headerPaint)
+            // Analyzed Specimen & Image Quality Box
+            canvas.drawText("Analyzed Specimen & Image Quality", leftMargin, y + 10f, headerPaint)
             y += 15f
-            val imgBoxRect = RectF(leftMargin, y, rightMargin, y + 40f)
-            canvas.drawRoundRect(imgBoxRect, 4f, 4f, boxPaint)
-            canvas.drawRoundRect(imgBoxRect, 4f, 4f, borderPaint)
-            canvas.drawText("Image ID: ${analysisResult.imageInfo.imageId} | Dimensions: ${analysisResult.imageInfo.width}x${analysisResult.imageInfo.height}", leftMargin + 10f, y + 15f, paint)
-            canvas.drawText("Quality: ${analysisResult.imageQuality.status} | Blur: ${analysisResult.imageQuality.blurStatus} | Calibration: ${analysisResult.imageQuality.calibrationStatus}", leftMargin + 10f, y + 30f, paint)
-            
-            y += 50f
+            val imgBoxHeight = 90f
+            val imgBoxRect = RectF(leftMargin, y, rightMargin, y + imgBoxHeight)
+            canvas.drawRoundRect(imgBoxRect, 6f, 6f, boxPaint)
+            canvas.drawRoundRect(imgBoxRect, 6f, 6f, borderPaint)
+
+            // Draw embedded HoVer-Net overlay thumbnail
+            try {
+                val overlayBmp = BitmapFactory.decodeResource(context.resources, R.drawable.hovernet_overlay)
+                if (overlayBmp != null) {
+                    val thumbRect = RectF(leftMargin + 6f, y + 6f, leftMargin + 80f, y + 80f)
+                    canvas.drawBitmap(overlayBmp, null, thumbRect, null)
+                    canvas.drawRoundRect(thumbRect, 4f, 4f, borderPaint)
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+            val textOffset = leftMargin + 90f
+            canvas.drawText("Image ID: ${analysisResult.imageInfo.imageId} | Source: ${analysisResult.imageInfo.source}", textOffset, y + 16f, paint)
+            canvas.drawText("Dimensions: ${analysisResult.imageInfo.width} × ${analysisResult.imageInfo.height} px | Magnification: 40×", textOffset, y + 32f, paint)
+            canvas.drawText("Quality: ${analysisResult.imageQuality.status} | Blur: ${analysisResult.imageQuality.blurStatus}", textOffset, y + 48f, paint)
+            canvas.drawText("Segmentation: HoVer-Net Instance Model (Green=Nuclei, Red=Epithelial)", textOffset, y + 64f, paint)
+            canvas.drawText("Calibration: ${analysisResult.imageQuality.calibrationStatus}", textOffset, y + 78f, smallPaint)
+
+            y += imgBoxHeight + 15f
             
             // Quantitative Morphology Summary
             canvas.drawText("Quantitative Morphology Summary", leftMargin, y + 10f, headerPaint)

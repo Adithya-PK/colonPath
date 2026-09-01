@@ -1,12 +1,16 @@
 package com.example.colonpath_ai.screens.analysis
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.colonpath_ai.components.*
 import com.example.colonpath_ai.data.SampleDataRepository
@@ -80,14 +84,64 @@ fun AnalysisResultScreen(
             }
 
             item {
-                SectionHeader("Image Quality")
-                Card {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        QualityBadge(status = analysisResult.imageQuality.status)
-                        Text("Resolution: ${analysisResult.imageQuality.resolution}")
-                        Text("Blur: ${analysisResult.imageQuality.blurStatus}")
-                        Text("Calibration: ${analysisResult.imageQuality.calibrationStatus}")
-                        Text("Accepted: ${if (analysisResult.imageQuality.accepted) "Yes" else "No"}")
+                SectionHeader(
+                    title = "Image Quality Assessment",
+                    subtitle = "Optical clarity, staining intensity, and resolution verification"
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+                    border = BorderStroke(1.dp, CardBorder)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text("Overall Quality", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+                            QualityBadge(status = analysisResult.imageQuality.status)
+                        }
+                        HorizontalDivider(color = CardBorder.copy(alpha = 0.5f))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("Resolution", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+                            Text(analysisResult.imageQuality.resolution, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium), color = TextPrimary)
+                        }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("Blur Metric", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+                            Text(analysisResult.imageQuality.blurStatus, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium), color = TextPrimary)
+                        }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("Optical Calibration", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+                            Text(analysisResult.imageQuality.calibrationStatus, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium), color = TextPrimary)
+                        }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("Quality Accepted", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+                            Text(
+                                if (analysisResult.imageQuality.accepted) "Yes (Pass)" else "No",
+                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+                                color = if (analysisResult.imageQuality.accepted) GreenSuccess else RedError
+                            )
+                        }
                     }
                 }
             }
@@ -130,12 +184,28 @@ fun AnalysisResultScreen(
 
             item {
                 SectionHeader("Nuclear Classification")
-                Card {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+                    border = BorderStroke(1.dp, CardBorder)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
                         analysisResult.nuclearClassification.categories.forEach { cat ->
-                            Text("${cat.name} ${cat.count} (${cat.percentage}%)")
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(cat.name, style = MaterialTheme.typography.bodyMedium, color = TextPrimary)
+                                Text("${cat.count} (${cat.percentage}%)", style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold), color = Blue500)
+                            }
                         }
-                        Spacer(modifier = Modifier.height(8.dp))
+                        HorizontalDivider(color = CardBorder.copy(alpha = 0.4f))
                         Text(
                             "Note: Cell categories represent computational classification, not clinical diagnosis.",
                             style = MaterialTheme.typography.bodySmall,

@@ -19,7 +19,13 @@ object SampleDataRepository {
     var activeCaseId: String? = null
     var selectedImageUri by mutableStateOf<Uri?>(null)
     var selectedBitmap by mutableStateOf<Bitmap?>(null)
-    var selectedImageName by mutableStateOf<String>("demo_sample_raw.png")
+    var selectedImageName by mutableStateOf<String>("")
+
+    fun clearCurrentSelection() {
+        selectedImageUri = null
+        selectedBitmap = null
+        selectedImageName = ""
+    }
 
     val samplePatient = PatientInfo(
         patientId = "PT-2026-0847",

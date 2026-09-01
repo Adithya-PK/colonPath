@@ -10,11 +10,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.Upload
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -24,10 +26,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.colonpath_ai.R
 import com.example.colonpath_ai.components.SectionHeader
 import com.example.colonpath_ai.data.SampleDataRepository
 import com.example.colonpath_ai.ui.theme.*
@@ -40,7 +41,7 @@ fun ImageSelectionScreen(
     onLiveMicroscope: () -> Unit
 ) {
     val context = LocalContext.current
-    var uploadStatusMessage by remember { mutableStateOf<String?>(null) }
+    val currentBmp = SampleDataRepository.selectedBitmap
 
     // Android Gallery / Photo Picker Launcher
     val galleryLauncher = rememberLauncherForActivityResult(
@@ -55,11 +56,9 @@ fun ImageSelectionScreen(
                     SampleDataRepository.selectedBitmap = bmp
                     val name = uri.lastPathSegment?.substringAfterLast('/') ?: "raw_specimen.png"
                     SampleDataRepository.selectedImageName = name
-                    uploadStatusMessage = "Loaded: $name (${bmp.width} × ${bmp.height})"
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                uploadStatusMessage = "Failed to decode selected image"
             }
         }
     }
@@ -124,29 +123,29 @@ fun ImageSelectionScreen(
             // Image Preview Header
             item {
                 SectionHeader(
-                    title = if (SampleDataRepository.selectedBitmap != null) "Selected Specimen Preview" else "Default Sample Specimen",
-                    subtitle = if (SampleDataRepository.selectedBitmap != null) "Raw H&E input ready for analysis" else "Sample tissue provided for demonstration"
+                    title = "Selected Specimen Preview",
+                    subtitle = if (currentBmp != null) "Raw H&E input ready for analysis" else "Upload an image to begin analysis."
                 )
             }
 
-            // Specimen Image Preview Container
+            // Specimen Image Preview Container (Empty state before selection)
             item {
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(280.dp),
+                        .height(280.dp)
+                        .clickable(enabled = currentBmp == null) { galleryLauncher.launch("image/*") },
                     shape = RoundedCornerShape(16.dp),
                     color = SurfaceWhite,
                     border = BorderStroke(1.dp, CardBorder)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(8.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        val currentBmp = SampleDataRepository.selectedBitmap
-                        if (currentBmp != null) {
+                    if (currentBmp != null) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
                             Image(
                                 bitmap = currentBmp.asImageBitmap(),
                                 contentDescription = "Uploaded Specimen",
@@ -155,43 +154,75 @@ fun ImageSelectionScreen(
                                     .clip(RoundedCornerShape(12.dp)),
                                 contentScale = ContentScale.Fit
                             )
-                        } else {
-                            Image(
-                                painter = painterResource(id = R.drawable.demo_sample_raw),
-                                contentDescription = "Sample H&E Specimen",
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .clip(RoundedCornerShape(12.dp)),
-                                contentScale = ContentScale.Fit
-                            )
-                        }
 
-                        // Badge over image
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = Navy800.copy(alpha = 0.82f),
-                            modifier = Modifier
-                                .align(Alignment.BottomCenter)
-                                .padding(bottom = 12.dp)
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                            // Status badge over image
+                            Surface(
+                                shape = RoundedCornerShape(12.dp),
+                                color = Navy800.copy(alpha = 0.85f),
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .padding(bottom = 10.dp)
                             ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.CheckCircle,
-                                    contentDescription = null,
-                                    tint = GreenSuccess,
-                                    modifier = Modifier.size(14.dp)
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = if (SampleDataRepository.selectedBitmap != null) "Custom Image Selected" else "Sample Colorectal H&E Patch",
-                                    color = SurfaceWhite,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.SemiBold
-                                )
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.CheckCircle,
+                                        contentDescription = null,
+                                        tint = GreenSuccess,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = "Specimen Loaded: ${SampleDataRepository.selectedImageName}",
+                                        color = SurfaceWhite,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.SemiBold
+                                    )
+                                }
                             }
+                        }
+                    } else {
+                        // Empty upload placeholder state
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Surface(
+                                shape = CircleShape,
+                                color = Blue50,
+                                modifier = Modifier.size(64.dp)
+                            ) {
+                                Box(contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Image,
+                                        contentDescription = null,
+                                        tint = Blue500,
+                                        modifier = Modifier.size(32.dp)
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            Text(
+                                text = "Upload an H&E Image",
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                color = TextPrimary
+                            )
+
+                            Spacer(modifier = Modifier.height(6.dp))
+
+                            Text(
+                                text = "Select a histopathology image from your gallery to begin analysis.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = TextSecondary,
+                                textAlign = TextAlign.Center
+                            )
                         }
                     }
                 }
@@ -209,28 +240,30 @@ fun ImageSelectionScreen(
                         modifier = Modifier.padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        val currentBmp = SampleDataRepository.selectedBitmap
-                        val width = currentBmp?.width ?: 2048
-                        val height = currentBmp?.height ?: 1536
-                        val srcName = SampleDataRepository.selectedImageName
-
-                        MetadataRow(label = "Image Source", value = if (currentBmp != null) "Gallery: $srcName" else "Demo H&E Sample")
-                        MetadataRow(label = "Resolution", value = "$width × $height px")
-                        MetadataRow(label = "Staining Quality", value = "Optimal (Passed QC)")
-                        MetadataRow(label = "Optical Magnification", value = "40× Objective Equivalent")
+                        if (currentBmp != null) {
+                            MetadataRow(label = "Image Source", value = "Gallery: ${SampleDataRepository.selectedImageName}")
+                            MetadataRow(label = "Resolution", value = "${currentBmp.width} × ${currentBmp.height} px")
+                            MetadataRow(label = "Staining Quality", value = "Optimal (Passed QC)")
+                            MetadataRow(label = "Optical Magnification", value = "40× Objective Equivalent")
+                        } else {
+                            MetadataRow(label = "Image Source", value = "No image selected")
+                            MetadataRow(label = "Resolution", value = "—")
+                            MetadataRow(label = "Status", value = "Awaiting image upload")
+                        }
                     }
                 }
             }
 
-            // Action Button
+            // Action Button (Disabled until an image is selected)
             item {
                 Button(
                     onClick = onAnalyze,
+                    enabled = currentBmp != null,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 12.dp)
                 ) {
-                    Text("Analyze Specimen")
+                    Text(if (currentBmp != null) "Analyze Specimen" else "Select an Image to Analyze")
                 }
                 Spacer(modifier = Modifier.height(100.dp))
             }
