@@ -1,4 +1,4 @@
-﻿package com.example.colonpath_ai.screens.comparison
+package com.example.colonpath_ai.screens.comparison
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -128,14 +128,14 @@ fun ComparisonScreen(
                         HorizontalDivider(color = CardBorder.copy(alpha = 0.5f), thickness = 0.8.dp)
 
                         val rows = listOf(
-                            Triple("Nuclei Count / Patch", "~180 cells", "$nucCount cells"),
-                            Triple("Nuclear Density", "98.5 /mm²", "${String.format("%.1f", nucCount * 0.076)} /mm²"),
-                            Triple("Mean Nuclear Area", "38.6 px²", "${String.format("%.1f", nucArea)} px²"),
-                            Triple("Nuclear Circularity", "0.86", "${String.format("%.2f", nucCirc)}"),
-                            Triple("Gland Count / Patch", "~16 glands", "$glandCount glands"),
-                            Triple("Gland Density", "12.8 /mm²", "${String.format("%.1f", glandCount * 0.076)} /mm²"),
-                            Triple("Mean Gland Area", "3,420 px²", "${String.format("%.0f", glandArea)} px²"),
-                            Triple("Gland Irregularity", "0.31", "${String.format("%.2f", 1.0 - glandCirc)}")
+                            Triple("Nuclei Count / Patch", "35 - 45 cells", "$nucCount cells"),
+                            Triple("Nuclear Density", "2.5 - 3.5 /mm²", "${String.format("%.1f", nucCount * 0.076)} /mm²"),
+                            Triple("Mean Nuclear Area", "42.0 px²", "${String.format("%.1f", nucArea)} px²"),
+                            Triple("Nuclear Circularity", "0.84 (Uniform)", "${String.format("%.2f", nucCirc)}"),
+                            Triple("Gland Count / Patch", "4 - 6 crypts", "$glandCount glands"),
+                            Triple("Gland Density", "0.4 - 0.6 /mm²", "${String.format("%.1f", glandCount * 0.076)} /mm²"),
+                            Triple("Gland Circularity", "0.88 (Tubular)", "${String.format("%.2f", glandCirc)}"),
+                            Triple("Gland Irregularity", "0.12 (Physiological)", "${String.format("%.2f", 1.0 - glandCirc)}")
                         )
 
                         rows.forEachIndexed { index, (metric, refVal, patientVal) ->
