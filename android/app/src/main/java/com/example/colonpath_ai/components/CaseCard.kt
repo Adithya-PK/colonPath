@@ -31,6 +31,24 @@ import androidx.compose.material3.IconButton
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 
+import android.graphics.Bitmap
+import androidx.compose.foundation.Image
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
+import com.example.colonpath_ai.data.ColonPathRepository
+import com.example.colonpath_ai.network.ColonPathApiClient
+import com.example.colonpath_ai.ui.theme.BackgroundLight
+import com.example.colonpath_ai.ui.theme.Blue500
+
 @Composable
 fun CaseCard(
     case: Case,
@@ -38,6 +56,14 @@ fun CaseCard(
     onDelete: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
+    var thumbBitmap by remember { mutableStateOf<Bitmap?>(null) }
+
+    LaunchedEffect(case.caseId) {
+        val bmp = ColonPathApiClient.fetchVisualizationBitmap(case.caseId, "nuclei")
+            ?: ColonPathApiClient.fetchVisualizationBitmap(case.caseId, "original")
+        thumbBitmap = bmp ?: if (ColonPathRepository.activeCaseId == case.caseId) ColonPathRepository.selectedBitmap else null
+    }
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -80,13 +106,36 @@ fun CaseCard(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            Text(
-                text = "Patient: ${case.patient.patientName}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = TextSecondary
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (thumbBitmap != null) {
+                    Image(
+                        bitmap = thumbBitmap!!.asImageBitmap(),
+                        contentDescription = "Specimen Thumbnail",
+                        modifier = Modifier
+                            .size(56.dp)
+                            .clip(RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Patient: ${case.patient.patientName}",
+                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+                        color = TextPrimary
+                    )
+                    Text(
+                        text = "${case.tissue} • ${case.stain}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextSecondary
+                    )
+                }
+            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
