@@ -1,17 +1,17 @@
 {
   "case_id": "COL-2026-030",
-  "timestamp": "2026-09-02T20:12:37.048189+00:00",
+  "timestamp": "2026-09-02T20:18:03.484501+00:00",
   "status": "completed",
   "image_quality": {
     "passed": true,
     "resolution": "256x256",
-    "blur_laplacian_variance": 1980.9,
+    "blur_laplacian_variance": 2613.59,
     "blur_status": "ACCEPTABLE",
-    "mean_brightness": 172.55,
+    "mean_brightness": 189.49,
     "brightness_status": "ACCEPTABLE",
-    "contrast_std": 38.4,
+    "contrast_std": 40.08,
     "contrast_status": "ACCEPTABLE",
-    "mean_saturation": 70.3
+    "mean_saturation": 54.13
   },
   "digepath": {
     "model_name": "Phikon-v2",
@@ -39,72 +39,53 @@
     }
   },
   "uncertainty": {
-    "score": 0.085,
-    "level": "LOW",
+    "score": 0.385,
+    "level": "HIGH",
     "entropy": -0.0,
     "normalized_entropy": 0.082,
-    "ood_score": 1.0,
-    "ood_status": "IN_DISTRIBUTION",
-    "is_ood": false,
-    "review_required": false,
-    "message": "AI-assisted classification ready for review."
+    "ood_score": 0.0,
+    "ood_status": "OOD_DETECTED",
+    "is_ood": true,
+    "review_required": true,
+    "message": "OOD / unsupported tissue input detected. Automated prediction abstained."
   },
   "model_agreement": {
-    "level": "HIGH",
-    "score": 1.0,
+    "level": "MEDIUM",
+    "score": 0.6667,
     "concordant_sources": [
       "Nuclear Morphology (Pleomorphism aligns with tumor likelihood)",
-      "Gland Morphology (Architectural distortion aligns with tumor prediction)",
       "Visual Foundation Channel (TUM aligns with Fusion TUM)"
     ],
-    "discordant_sources": [],
-    "summary": "High agreement across all evaluated sources: TUM supported by visual, nuclear, and glandular evidence."
+    "discordant_sources": [
+      "Gland Morphology (Regular glands conflict with tumor prediction)"
+    ],
+    "summary": "Moderate agreement: Partial alignment on TUM, with minor morphological variance."
   },
   "nuclear_evidence": {
-    "total_count": 125,
+    "total_count": 81,
     "type_counts": {
-      "epithelial": 89,
-      "inflammatory": 18,
+      "epithelial": 50,
+      "inflammatory": 4,
       "spindle_shaped": 0,
-      "miscellaneous": 18
+      "miscellaneous": 24
     },
-    "mean_area_px2": 103.17,
-    "mean_perimeter_px": 43.29,
-    "mean_eccentricity": 0.709,
-    "mean_circularity": 0.686,
-    "interpretation": "Nuclear pleomorphism detected: 125 nuclei, high mean area (103.2 px\u00b2)."
+    "mean_area_px2": 125.76,
+    "mean_perimeter_px": 48.55,
+    "mean_eccentricity": 0.744,
+    "mean_circularity": 0.626,
+    "interpretation": "Nuclear pleomorphism detected: 81 nuclei, high mean area (125.8 px\u00b2)."
   },
   "gland_evidence": {
-    "total_count": 14,
-    "mean_area_pixels": 2851.07,
-    "mean_perimeter_pixels": 254.36,
-    "mean_width_pixels": 65.0,
-    "mean_height_pixels": 48.29,
-    "mean_aspect_ratio": 1.543,
-    "mean_circularity": 0.467,
-    "interpretation": "Glandular architectural distortion: 14 glands, low circularity (0.47), high aspect ratio (1.54)."
+    "total_count": 15,
+    "mean_area_pixels": 1556.13,
+    "mean_perimeter_pixels": 204.84,
+    "mean_width_pixels": 31.73,
+    "mean_height_pixels": 42.27,
+    "mean_aspect_ratio": 1.368,
+    "mean_circularity": 0.621,
+    "interpretation": "Regular glandular architecture: 15 glands, circularity (0.62)."
   },
   "priority_regions": [
-    {
-      "region_id": "R_01",
-      "index": 1,
-      "x": 0,
-      "y": 0,
-      "width": 128,
-      "height": 128,
-      "prediction": "TUM",
-      "confidence": 0.885,
-      "tumor_probability": 0.986,
-      "uncertainty_score": 0.085,
-      "uncertainty_level": "LOW",
-      "priority_score": 0.7564500000000001,
-      "priority_level": "HIGH",
-      "priority_label": "AI-prioritized region",
-      "nuclei_count": 32,
-      "glands_count": 1,
-      "agreement_level": "MEDIUM",
-      "rationale": "High AI priority due to prominent tumor probability and nuclear atypia."
-    },
     {
       "region_id": "R_04",
       "index": 4,
@@ -112,18 +93,18 @@
       "y": 128,
       "width": 128,
       "height": 128,
-      "prediction": "TUM",
-      "confidence": 0.885,
-      "tumor_probability": 0.986,
+      "prediction": "DEB",
+      "confidence": 0.968,
+      "tumor_probability": 0.032,
       "uncertainty_score": 0.085,
       "uncertainty_level": "LOW",
-      "priority_score": 0.7564500000000001,
-      "priority_level": "HIGH",
+      "priority_score": 0.29115,
+      "priority_level": "LOW",
       "priority_label": "AI-prioritized region",
-      "nuclei_count": 40,
+      "nuclei_count": 28,
       "glands_count": 0,
-      "agreement_level": "MEDIUM",
-      "rationale": "High AI priority due to prominent tumor probability and nuclear atypia."
+      "agreement_level": "HIGH",
+      "rationale": "Low AI priority with regular morphological patterns."
     },
     {
       "region_id": "R_03",
@@ -137,11 +118,31 @@
       "tumor_probability": 0.032,
       "uncertainty_score": 0.085,
       "uncertainty_level": "LOW",
-      "priority_score": 0.32715,
+      "priority_score": 0.24615,
       "priority_level": "LOW",
       "priority_label": "AI-prioritized region",
-      "nuclei_count": 37,
+      "nuclei_count": 17,
       "glands_count": 0,
+      "agreement_level": "HIGH",
+      "rationale": "Low AI priority with regular morphological patterns."
+    },
+    {
+      "region_id": "R_01",
+      "index": 1,
+      "x": 0,
+      "y": 0,
+      "width": 128,
+      "height": 128,
+      "prediction": "DEB",
+      "confidence": 0.968,
+      "tumor_probability": 0.032,
+      "uncertainty_score": 0.085,
+      "uncertainty_level": "LOW",
+      "priority_score": 0.23415,
+      "priority_level": "LOW",
+      "priority_label": "AI-prioritized region",
+      "nuclei_count": 17,
+      "glands_count": 1,
       "agreement_level": "HIGH",
       "rationale": "Low AI priority with regular morphological patterns."
     },
@@ -157,10 +158,10 @@
       "tumor_probability": 0.032,
       "uncertainty_score": 0.085,
       "uncertainty_level": "LOW",
-      "priority_score": 0.26715,
+      "priority_score": 0.18015,
       "priority_level": "LOW",
       "priority_label": "AI-prioritized region",
-      "nuclei_count": 16,
+      "nuclei_count": 19,
       "glands_count": 0,
       "agreement_level": "HIGH",
       "rationale": "Low AI priority with regular morphological patterns."
@@ -260,14 +261,14 @@
     "confidence": 0.885,
     "calibrated_confidence": 0.948,
     "tumor_probability": 0.986,
-    "uncertainty_level": "LOW",
+    "uncertainty_level": "HIGH",
     "normalized_entropy": 0.082,
-    "ood_status": "IN_DISTRIBUTION",
-    "consensus_level": "HIGH",
-    "nuclear_total_count": 125,
-    "nuclear_mean_area_px2": 103.17,
-    "gland_total_count": 14,
-    "gland_mean_circularity": 0.467
+    "ood_status": "OOD_DETECTED",
+    "consensus_level": "MEDIUM",
+    "nuclear_total_count": 81,
+    "nuclear_mean_area_px2": 125.76,
+    "gland_total_count": 15,
+    "gland_mean_circularity": 0.621
   },
   "visualizations": {
     "original": "/cases/COL-2026-030/visualization/original",
@@ -285,18 +286,18 @@
   ],
   "lifecycle_state": "COMPLETED",
   "stage_durations_ms": {
-    "VALIDATING": 2.59,
-    "FEATURE_EXTRACTION": 599.55,
-    "FUSION": 1.21,
-    "UNCERTAINTY": 0.21,
-    "AGREEMENT": 0.05,
-    "REGION_ANALYSIS": 2168.63,
-    "GENERATING_VISUALIZATIONS": 474.0,
-    "TOTAL_PIPELINE_MS": 3246.35
+    "VALIDATING": 2.79,
+    "FEATURE_EXTRACTION": 599.07,
+    "FUSION": 0.75,
+    "UNCERTAINTY": 0.17,
+    "AGREEMENT": 0.03,
+    "REGION_ANALYSIS": 10.71,
+    "GENERATING_VISUALIZATIONS": 342.62,
+    "TOTAL_PIPELINE_MS": 956.21
   },
   "reproducibility": {
     "pipeline_version": "2.0.0",
-    "input_image_sha256": "772c3f7815f4c52129c47aa71c7b514a5101e6f3153e8914f3c0a6d1df07124e",
+    "input_image_sha256": "9024577e53d24ccd283f08c11f7318b1789ed1646832e3878b06e669c134c15b",
     "input_image_name": "COL-2026-030.png",
     "models": {
       "unet": "31.4M params (ResNet34 backbone, Warwick QU Dataset)",
@@ -305,10 +306,10 @@
       "fusion": "131.2K params (MultimodalFusionNet, 1024D+16D -> 128D)"
     },
     "temperature_scaling_factor": 1.25,
-    "timestamp_utc": "2026-09-02T20:12:37.048189+00:00"
+    "timestamp_utc": "2026-09-02T20:18:03.484501+00:00"
   },
   "explanation": {
-    "text": "**1. Diagnostic Impression & Malignancy Triaging:**\nMultimodal AI fusion analysis classifies this colorectal tissue specimen as **TUM** with **94.8% calibrated confidence** (Estimated Malignancy Likelihood: **98.6%**). Consensus voting across visual foundation embeddings and quantitative morphometry demonstrates **HIGH concordance**.\n\n**2. Cytopathology & Nuclear Atypia:**\nHoVer-Net instance segmentation resolved a total of **125 cellular nuclei** (Mean Area: **103.2 px\u00b2**, Circularity Index: **0.686**, Eccentricity: **0.709**). Elevated nuclear pleomorphism, hyperchromasia, and nuclear crowding density are observed across epithelial populations. Single-pass proliferation index: **9.5 nuclei/mm\u00b2** (Note: Temporal tumor growth rate is medically unmeasurable from a single static slide and requires serial biopsies).\n\n**3. Glandular Architecture & Microenvironment:**\nDeep U-Net segmentation delineated **14 glandular structures** (Mean Area: **2851.1 px\u00b2**, Circularity: **0.467**). Architectural distortion with lumen irregular branching and stromal cribriform remodeling is noted.\n\n**4. Decision-Support Guidance:**\nMalignancy indicators and nuclear atypia deviate from reference baseline. Urgent secondary review by a board-certified pathologist is strongly recommended. (Model Epistemic Entropy: **0.082**, Status: **IN_DISTRIBUTION**).",
+    "text": "AI-Assisted Classification: TUM (Calibrated Confidence: 94.8%). High model uncertainty detected (Normalized Entropy: 0.082). Pathologist review is recommended to evaluate cellular features.",
     "claims": [
       {
         "claim_id": "C_01",
@@ -321,33 +322,33 @@
       {
         "claim_id": "C_02",
         "category": "nuclear_morphometry",
-        "claim_statement": "Observed 125 nuclei with mean area 103.2 px\u00b2 and circularity 0.686.",
+        "claim_statement": "Observed 81 nuclei with mean area 125.8 px\u00b2 and circularity 0.626.",
         "evidence_source": "nuclear_evidence.total_count",
-        "evidence_value": 125,
+        "evidence_value": 81,
         "support_type": "measured_direct"
       },
       {
         "claim_id": "C_03",
         "category": "gland_morphometry",
-        "claim_statement": "Segmented 14 glandular structures with mean circularity 0.467.",
+        "claim_statement": "Segmented 15 glandular structures with mean circularity 0.621.",
         "evidence_source": "gland_evidence.total_count",
-        "evidence_value": 14,
+        "evidence_value": 15,
         "support_type": "measured_direct"
       },
       {
         "claim_id": "C_04",
         "category": "uncertainty",
-        "claim_statement": "Model uncertainty level is LOW (Normalized Entropy: 0.0820, OOD: IN_DISTRIBUTION).",
+        "claim_statement": "Model uncertainty level is HIGH (Normalized Entropy: 0.0820, OOD: OOD_DETECTED).",
         "evidence_source": "uncertainty.level",
-        "evidence_value": "LOW",
+        "evidence_value": "HIGH",
         "support_type": "calibrated_metric"
       },
       {
         "claim_id": "C_05",
         "category": "model_agreement",
-        "claim_statement": "Multi-source consensus agreement is HIGH.",
+        "claim_statement": "Multi-source consensus agreement is MEDIUM.",
         "evidence_source": "model_agreement.level",
-        "evidence_value": "HIGH",
+        "evidence_value": "MEDIUM",
         "support_type": "voting_consensus"
       }
     ],

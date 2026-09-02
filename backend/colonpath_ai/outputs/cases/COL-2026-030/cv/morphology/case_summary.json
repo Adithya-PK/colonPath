@@ -1,25 +1,26 @@
 {
   "case_id": "COL-2026-030",
   "nuclei": {
-    "total": 125,
+    "total": 81,
     "types": {
-      "1": 89,
-      "2": 18,
+      "1": 50,
+      "2": 4,
       "3": 0,
-      "4": 18
+      "4": 24,
+      "0": 3
     },
-    "mean_area_px2": 103.172,
-    "mean_perimeter_px": 43.291204778671265,
-    "mean_eccentricity": 0.7087181557911036,
-    "mean_circularity": 0.6855333044666388
+    "mean_area_px2": 125.75925925925925,
+    "mean_perimeter_px": 48.554157496970376,
+    "mean_eccentricity": 0.7438602700927474,
+    "mean_circularity": 0.6264038185990566
   },
   "glands": {
-    "total": 14,
-    "mean_area_pixels": 2851.0714285714284,
-    "mean_perimeter_pixels": 254.35767650604248,
-    "mean_width_pixels": 65.0,
-    "mean_height_pixels": 48.285714285714285,
-    "mean_aspect_ratio": 1.5432688051297077,
-    "mean_circularity": 0.4673378496437111
+    "total": 15,
+    "mean_area_pixels": 1556.1333333333334,
+    "mean_perimeter_pixels": 204.83596243858338,
+    "mean_width_pixels": 31.733333333333334,
+    "mean_height_pixels": 42.266666666666666,
+    "mean_aspect_ratio": 1.368311407216712,
+    "mean_circularity": 0.6213574273001008
   }
 }
