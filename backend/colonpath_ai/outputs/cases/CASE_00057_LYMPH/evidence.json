@@ -1,0 +1,24 @@
+{
+  "case_id": "CASE_00057_LYMPH",
+  "timestamp": "2026-09-02T20:03:18.208752+00:00",
+  "prediction_class": "TUM",
+  "prediction_confidence": 0.885,
+  "calibrated_confidence": 0.948,
+  "tumor_probability": 0.986,
+  "uncertainty_score": 0.085,
+  "uncertainty_level": "LOW",
+  "ood_score": 1.0,
+  "ood_status": "IN_DISTRIBUTION",
+  "agreement_level": "MEDIUM",
+  "nuclear_total_count": 115,
+  "nuclear_mean_area_px2": 98.89,
+  "gland_total_count": 10,
+  "gland_mean_circularity": 0.67,
+  "priority_regions_count": 4,
+  "region_ids": [
+    "R_01",
+    "R_03",
+    "R_02",
+    "R_04"
+  ]
+}

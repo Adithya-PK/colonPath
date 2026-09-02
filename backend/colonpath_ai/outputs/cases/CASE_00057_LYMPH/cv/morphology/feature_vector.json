@@ -1,0 +1,19 @@
+{
+  "case_id": "CASE_00057_LYMPH",
+  "nuclei_total": 115,
+  "nuclei_type_1": 111,
+  "nuclei_type_2": 3,
+  "nuclei_type_3": 0,
+  "nuclei_type_4": 1,
+  "nuclei_mean_area_px2": 98.88695652173914,
+  "nuclei_mean_perimeter_px": 42.724648530586904,
+  "nuclei_mean_eccentricity": 0.686561672462686,
+  "nuclei_mean_circularity": 0.6728071589669323,
+  "glands_total": 10,
+  "glands_mean_area_px2": 1553.4,
+  "glands_mean_perimeter_px": 160.52489019632338,
+  "glands_mean_width_px": 38.3,
+  "glands_mean_height_px": 42.1,
+  "glands_mean_aspect_ratio": 1.3568881513585476,
+  "glands_mean_circularity": 0.6704129820745652
+}
