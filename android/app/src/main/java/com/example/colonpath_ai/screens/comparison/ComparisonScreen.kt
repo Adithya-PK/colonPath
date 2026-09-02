@@ -31,11 +31,11 @@ fun ComparisonScreen(
     val nuc = caseResult?.nuclear_evidence
     val gland = caseResult?.gland_evidence
 
-    val nucCount = nuc?.total_count ?: 1824
+    val nucCount = nuc?.total_count ?: 182
     val nucArea = nuc?.mean_area_px2 ?: 47.3
     val nucCirc = nuc?.mean_circularity ?: 0.72
 
-    val glandCount = gland?.total_count ?: 146
+    val glandCount = gland?.total_count ?: 18
     val glandArea = gland?.mean_area_pixels ?: 2840.0
     val glandCirc = gland?.mean_circularity ?: 0.68
 
@@ -96,11 +96,11 @@ fun ComparisonScreen(
                 }
             }
 
-            // 2. Reference vs Patient Comparison Table
+            // 2. Reference vs Patient Comparison Table (Normalized Per-Unit Basis)
             item {
                 SectionHeader(
                     title = "Reference vs Patient Comparison",
-                    subtitle = "Quantitative morphological measurements against baseline"
+                    subtitle = "Quantitative morphological measurements against normalized baseline"
                 )
                 Spacer(modifier = Modifier.height(4.dp))
 
@@ -128,11 +128,11 @@ fun ComparisonScreen(
                         HorizontalDivider(color = CardBorder.copy(alpha = 0.5f), thickness = 0.8.dp)
 
                         val rows = listOf(
-                            Triple("Nuclei Count", "1200", "$nucCount"),
+                            Triple("Nuclei Count / Patch", "~180 cells", "$nucCount cells"),
                             Triple("Nuclear Density", "98.5 /mm²", "${String.format("%.1f", nucCount * 0.076)} /mm²"),
                             Triple("Mean Nuclear Area", "38.6 px²", "${String.format("%.1f", nucArea)} px²"),
                             Triple("Nuclear Circularity", "0.86", "${String.format("%.2f", nucCirc)}"),
-                            Triple("Gland Count", "162", "$glandCount"),
+                            Triple("Gland Count / Patch", "~16 glands", "$glandCount glands"),
                             Triple("Gland Density", "12.8 /mm²", "${String.format("%.1f", glandCount * 0.076)} /mm²"),
                             Triple("Mean Gland Area", "3,420 px²", "${String.format("%.0f", glandArea)} px²"),
                             Triple("Gland Irregularity", "0.31", "${String.format("%.2f", 1.0 - glandCirc)}")
@@ -189,7 +189,7 @@ fun ComparisonScreen(
                         if (isWhyResultExpanded) {
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                "The feature space embedding exhibits elevated nuclear pleomorphism index (0.38) and glandular boundary irregularity (0.64). Highest cosine proximity aligns with historical adenomatous profiles.",
+                                "The feature space embedding exhibits nuclear pleomorphism and glandular boundary irregularity consistent with historical reference profiles. Proximity indicates morphological features aligned with adenomatous/tubular architecture.",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = TextPrimary
                             )
@@ -212,7 +212,7 @@ fun ComparisonScreen(
                     ) {
                         Icon(Icons.Outlined.Info, contentDescription = null, tint = Amber500, modifier = Modifier.size(20.dp))
                         Text(
-                            text = "Computational Note: Similarity scores represent feature-space vector proximity to reference archives and are not diagnostic disease probabilities.",
+                            text = "Computational Note: Baseline metrics are normalized to standardized optical fields. Similarity scores represent feature-space vector proximity, not definitive diagnostic likelihood.",
                             style = MaterialTheme.typography.bodySmall,
                             color = TextPrimary
                         )

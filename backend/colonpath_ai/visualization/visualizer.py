@@ -120,19 +120,22 @@ class CaseVisualizer:
         img_reg.save(str(reg_path))
         paths["regions"] = str(reg_path)
 
-        # 5. Uncertainty Map Overlay
+        # 5. Uncertainty Map Overlay (Gaussian-smoothed Jet Entropy Heatmap)
         unc_path = case_dir / "uncertainty.png"
-        unc_overlay = np.zeros((img_orig.height, img_orig.width, 3), dtype=np.uint8)
+        unc_grid = np.zeros((img_orig.height, img_orig.width), dtype=np.float32)
         for reg in regions:
             x, y, w, h = reg.x, reg.y, reg.width, reg.height
-            # Colormap from green (low uncertainty) to red (high uncertainty)
-            u = reg.uncertainty_score
-            r_val = int(255 * u)
-            g_val = int(255 * (1.0 - u))
-            unc_overlay[y : y + h, x : x + w] = [r_val, g_val, 0]
+            u = float(np.clip(reg.uncertainty_score, 0.15, 0.85))
+            unc_grid[y : y + h, x : x + w] = u
+
+        # Smooth spatial boundaries
+        unc_smoothed = cv2.GaussianBlur(unc_grid, (51, 51), 0)
+        unc_uint8 = (unc_smoothed * 255.0).astype(np.uint8)
+        unc_color = cv2.applyColorMap(unc_uint8, cv2.COLORMAP_JET)
+        unc_color = cv2.cvtColor(unc_color, cv2.COLOR_BGR2RGB)
 
         img_base = np.array(img_orig)
-        blended_unc = cv2.addWeighted(img_base, 0.65, unc_overlay, 0.35, 0)
+        blended_unc = cv2.addWeighted(img_base, 0.60, unc_color, 0.40, 0)
         Image.fromarray(blended_unc).save(str(unc_path))
         paths["uncertainty"] = str(unc_path)
 

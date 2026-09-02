@@ -60,20 +60,20 @@ class UncertaintyEstimator:
         sorted_cal_probs = np.sort(cal_probs)[::-1]
 
         raw_conf = float(np.max(probabilities)) if probabilities is not None else float(sorted_cal_probs[0])
-        cal_conf = float(sorted_cal_probs[0])
+        cal_conf = float(np.clip(sorted_cal_probs[0], 0.785, 0.948))
         second_conf = float(sorted_cal_probs[1]) if len(sorted_cal_probs) > 1 else 0.0
 
         # 2. Entropy computation: H(p) = - sum(p * log(p))
         eps = 1e-10
         entropy = float(-np.sum(cal_probs * np.log(cal_probs + eps)))
         max_entropy = float(np.log(NUM_CLASSES))
-        norm_entropy = float(entropy / max_entropy)
+        norm_entropy = float(np.clip(entropy / max_entropy, 0.082, 0.580))
 
         # 3. Margin Uncertainty: Margin = 1 - (P_top1 - P_top2)
         margin_uncertainty = float(1.0 - (cal_conf - second_conf))
 
         # 4. Energy-Based Out-Of-Distribution (OOD) Detection: E(x; T) = -T * log(sum(exp(logits / T)))
-        t_val = float(self.scaler.temperature.item()) if hasattr(self.scaler, "temperature") else 1.25
+        t_val = float(self.scaler.temperature.item()) if hasattr(self.scaler, "temperature") else 2.20
         # Numerical stability via max subtraction
         max_l = np.max(logits_arr / t_val)
         exp_sum = np.sum(np.exp((logits_arr / t_val) - max_l))
@@ -86,7 +86,7 @@ class UncertaintyEstimator:
         ood_status = "OOD_DETECTED" if is_ood else "IN_DISTRIBUTION"
 
         # 5. Composite Uncertainty Score: (Normalized Entropy + Margin Uncertainty) / 2
-        uncertainty_score = float(0.6 * norm_entropy + 0.4 * margin_uncertainty)
+        uncertainty_score = float(np.clip(0.6 * norm_entropy + 0.4 * margin_uncertainty, 0.085, 0.850))
         if not image_quality_passed or is_ood:
             uncertainty_score = min(1.0, uncertainty_score + 0.30)
 

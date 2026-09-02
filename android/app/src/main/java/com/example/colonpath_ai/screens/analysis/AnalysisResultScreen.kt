@@ -1,10 +1,11 @@
-﻿package com.example.colonpath_ai.screens.analysis
+package com.example.colonpath_ai.screens.analysis
 
 import android.graphics.Bitmap
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -455,7 +456,68 @@ fun AnalysisResultScreen(
                 }
             }
 
-            // 8. Action Button: Save Case to History
+            // 8. PROMINENT PATHOLOGIST COPILOT AI CHATBOT BANNER
+            item {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showCopilotDialog = true },
+                    shape = RoundedCornerShape(16.dp),
+                    color = Blue50,
+                    border = BorderStroke(1.5.dp, Blue500.copy(alpha = 0.5f))
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = Blue500,
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Psychology,
+                                    contentDescription = null,
+                                    tint = SurfaceWhite,
+                                    modifier = Modifier.size(28.dp)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(14.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "Pathologist AI Copilot",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Navy800
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Surface(shape = RoundedCornerShape(6.dp), color = GreenSuccess.copy(alpha = 0.15f)) {
+                                    Text(
+                                        text = "MedGemma Live",
+                                        color = GreenSuccess,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "Ask clinical inquiries regarding cellular pleomorphism, tumor likelihood & triage rationale.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = TextSecondary
+                            )
+                        }
+                    }
+                }
+            }
+
+            // 9. Action Button: Save Case to History
             item {
                 Button(
                     onClick = {
