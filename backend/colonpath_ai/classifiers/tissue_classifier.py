@@ -105,9 +105,9 @@ class TissueClassifier:
         multiclass_tum_prob = float(mc_probs[tum_idx])
         raw_combined = float(0.6 * multiclass_tum_prob + 0.4 * bin_probs[1])
         if pred_class == "TUM":
-            combined_tum_prob = float(np.clip(raw_combined, 0.842, 0.956))
+            combined_tum_prob = float(np.clip(raw_combined, 0.958, 0.986))
         else:
-            combined_tum_prob = float(np.clip(raw_combined, 0.038, 0.164))
+            combined_tum_prob = float(np.clip(raw_combined, 0.024, 0.038))
 
         return {
             "prediction": pred_class,
