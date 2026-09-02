@@ -1,4 +1,4 @@
-﻿"""
+"""
 Case Service Layer for Managing Analysis, Lifecycle State, Idempotency, and Case Queries.
 """
 
@@ -46,14 +46,7 @@ class CaseService:
             logger.warning(f"[IDEMPOTENCY] Case '{cid}' is currently processing. Rejecting duplicate request.")
             raise CaseAlreadyProcessingError(case_id=cid)
 
-        # 2. Idempotency Check: Already completed?
-        if not force_reanalyze:
-            existing_result = self.repository.get_case_result(cid)
-            if existing_result is not None and existing_result.get("lifecycle_state") == CaseStage.COMPLETED.value:
-                logger.info(f"[IDEMPOTENCY] Returning existing completed result for case '{cid}'.")
-                return existing_result
-
-        # Register as actively processing
+        # Always execute live inference for active requests to ensure 100% dynamic metrics per image
         _ACTIVE_PROCESSING_CASES.add(cid)
         case_output_dir = PROJECT_ROOT / "outputs" / "cases" / cid
         case_output_dir.mkdir(parents=True, exist_ok=True)
