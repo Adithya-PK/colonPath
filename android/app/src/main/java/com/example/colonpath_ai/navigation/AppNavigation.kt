@@ -232,7 +232,11 @@ fun ColonPathNavigation() {
             }
             composable("dashboard") {
                 DashboardScreen(
-                    onNewAnalysis = { navController.navigate("new_case") },
+                    onNewAnalysis = {
+                        com.example.colonpath_ai.data.ColonPathRepository.clearSelection()
+                        com.example.colonpath_ai.data.ColonPathRepository.currentCaseResult = null
+                        navController.navigate("new_case")
+                    },
                     onLiveAnalysis = { navController.navigate("live_analysis") },
                     onHistory = { navController.navigate("history") },
                     onCaseClick = { caseId -> navController.navigate("case_details/$caseId") }
@@ -242,8 +246,8 @@ fun ColonPathNavigation() {
                 NewCaseScreen(
                     onBack = { navController.popBackStack() },
                     onProceed = { newCase -> 
-                        com.example.colonpath_ai.data.SampleDataRepository.addCase(newCase)
-                        com.example.colonpath_ai.data.SampleDataRepository.activeCaseId = newCase.caseId
+                        com.example.colonpath_ai.data.ColonPathRepository.clearSelection()
+                        com.example.colonpath_ai.data.ColonPathRepository.activeCaseId = newCase.caseId
                         navController.navigate("image_selection") 
                     }
                 )

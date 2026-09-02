@@ -47,22 +47,19 @@ fun ImageSelectionScreen(
     onLiveMicroscope: () -> Unit
 ) {
     val context = LocalContext.current
-    val currentBmp = ColonPathRepository.selectedBitmap ?: SampleDataRepository.selectedBitmap
+    val currentBmp = ColonPathRepository.selectedBitmap
 
     // Android Gallery / Photo Picker Launcher
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
         if (uri != null) {
-            SampleDataRepository.selectedImageUri = uri
             ColonPathRepository.selectedImageUri = uri
             try {
                 val inputStream = context.contentResolver.openInputStream(uri)
                 val bmp = BitmapFactory.decodeStream(inputStream)
                 if (bmp != null) {
-                    SampleDataRepository.selectedBitmap = bmp
                     val name = uri.lastPathSegment?.substringAfterLast('/') ?: "raw_specimen.png"
-                    SampleDataRepository.selectedImageName = name
                     ColonPathRepository.selectedBitmap = bmp
                     ColonPathRepository.selectedImageName = name
                 }
