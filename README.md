@@ -316,6 +316,9 @@ $$\mathbf{m} = \big[ N_{\text{total}},\, \bar{A}_{\text{nuc}},\, \bar{P}_{\text{
 
 ## 7. Hackathon & Jury Defense Guide
 
+For the full 75-question chronological defense compendium covering technical, business, hardware, and regulatory inquiries, see:  
+📄 **[`JURY_DEFENSE_75_QUESTIONS_AND_ANSWERS.md`](JURY_DEFENSE_75_QUESTIONS_AND_ANSWERS.md)**
+
 ### The 30-Second Pitch
 > *"Colorectal cancer histopathology requires meticulous examination of tissue architecture and cellular atypia. Standard AI models act as black boxes, predicting tissue classes from pixel representations without interpretable histological evidence. ColonPath-AI V3 is a clinical decision-support system that combines foundation vision transformers (Phikon-v2) with explicit, verifiable cellular and glandular morphometry (HoVer-Net + U-Net). By fusing 1024-D visual embeddings with a 16-D quantitative morphology vector, calibrating predictions, and enforcing anti-hallucination claim validation, ColonPath-AI provides pathologists with transparent, evidence-grounded AI decision support and native clinical reports directly on mobile and desktop."*
 
