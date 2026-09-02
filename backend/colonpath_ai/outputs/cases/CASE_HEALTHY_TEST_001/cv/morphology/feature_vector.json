@@ -1,0 +1,19 @@
+{
+  "case_id": "CASE_HEALTHY_TEST_001",
+  "nuclei_total": 35,
+  "nuclei_type_1": 35,
+  "nuclei_type_2": 0,
+  "nuclei_type_3": 0,
+  "nuclei_type_4": 0,
+  "nuclei_mean_area_px2": 346.98571428571427,
+  "nuclei_mean_perimeter_px": 101.15293448311942,
+  "nuclei_mean_eccentricity": 0.8420348436101027,
+  "nuclei_mean_circularity": 0.510571107267994,
+  "glands_total": 4,
+  "glands_mean_area_px2": 2596.25,
+  "glands_mean_perimeter_px": 188.1916468143463,
+  "glands_mean_width_px": 55.75,
+  "glands_mean_height_px": 59.75,
+  "glands_mean_aspect_ratio": 1.0718953460332772,
+  "glands_mean_circularity": 0.9199920537421893
+}

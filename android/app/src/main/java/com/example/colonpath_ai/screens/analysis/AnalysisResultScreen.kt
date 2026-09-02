@@ -261,6 +261,7 @@ fun AnalysisResultScreen(
 
                 val visTabs = listOf(
                     "original" to "Original H&E",
+                    "combined" to "Combined View",
                     "nuclei" to "Nuclear View",
                     "glands" to "Gland View",
                     "regions" to "Priority Regions",
@@ -328,7 +329,8 @@ fun AnalysisResultScreen(
                         ) {
                             Text(
                                 text = when (selectedVisType) {
-                                    "nuclei" -> "HoVer-Net nuclear boundaries (green), epithelial (red), inflammatory (blue)"
+                                    "combined" -> "Combined: U-Net Gland boundaries (cyan) + HoVer-Net Nuclear boundaries (green) & Centroids (red)"
+                                    "nuclei" -> "HoVer-Net: Nuclear boundaries (green) & Epithelial Centroids (red)"
                                     "glands" -> "U-Net Gland Boundary Segmentation • ResNet34 Backbone"
                                     "regions" -> "2x2 Priority Focus Grid • Spatial Architecture Ranking"
                                     "uncertainty" -> "Shannon Entropy: ${String.format("%.3f", unc?.entropy ?: 0.182)} • OOD Status: ${unc?.ood_status ?: "IN_DISTRIBUTION"}"

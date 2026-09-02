@@ -245,7 +245,7 @@ def run_hovernet_segmentation(
             "input_dir": str(temp_in),
             "output_dir": str(temp_out),
             "mem_usage": 0.2,
-            "draw_dot": False,
+            "draw_dot": True,
             "save_qupath": False,
             "save_raw_map": False,
         }
@@ -264,6 +264,8 @@ def run_hovernet_segmentation(
                 json.dump(nuc_data, f, indent=2)
             if gen_overlay.exists():
                 shutil.copyfile(gen_overlay, output_overlay_path)
+            else:
+                render_nuclear_overlay(image_path, nuc_data, output_overlay_path)
             shutil.rmtree(temp_in, ignore_errors=True)
             shutil.rmtree(temp_out, ignore_errors=True)
             return nuc_data
@@ -275,27 +277,27 @@ def run_hovernet_segmentation(
 
 
 def render_nuclear_overlay(image_path: Path, nuc_data: Dict[str, Any], output_path: Path) -> None:
-    """Renders color-coded nuclear boundaries over the raw H&E image."""
+    """Renders green nuclear contours and red centroid dots over the raw H&E image."""
     img = cv2.imread(str(image_path))
     if img is None:
         return
 
-    # Color palette: 1=Epithelial(Red), 2=Inflammatory(Green), 3=Spindle(Blue), 4=Misc(Yellow)
-    colors = {
-        1: (0, 0, 255),    # Red
-        2: (0, 255, 0),    # Green
-        3: (255, 0, 0),    # Blue
-        4: (0, 255, 255),  # Yellow
-    }
-
     nuclei = nuc_data.get("nuc", {})
     for n_id, n_info in nuclei.items():
         contour = n_info.get("contour", [])
+        centroid = n_info.get("centroid", None)
         n_type = int(n_info.get("type", 3))
-        col = colors.get(n_type, (255, 255, 255))
+
+        # 1. Draw Green contour boundary around nucleus
         if len(contour) >= 3:
             pts = np.asarray(contour, dtype=np.int32).reshape((-1, 1, 2))
-            cv2.polylines(img, [pts], isClosed=True, color=col, thickness=1)
+            cv2.polylines(img, [pts], isClosed=True, color=(0, 255, 0), thickness=2)
+
+        # 2. Draw Red centroid dot in the middle of epithelial nuclei (or cyan for inflammatory)
+        if centroid is not None:
+            cx, cy = int(centroid[0]), int(centroid[1])
+            dot_color = (0, 0, 255) if n_type == 1 or n_type == 3 else (255, 255, 0)
+            cv2.circle(img, (cx, cy), radius=2, color=dot_color, thickness=-1)
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     cv2.imwrite(str(output_path), img)

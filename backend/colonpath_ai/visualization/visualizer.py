@@ -71,15 +71,15 @@ class CaseVisualizer:
             g_mask = Image.open(g_mask_file).convert("L").resize(img_orig.size, Image.Resampling.NEAREST)
             g_mask_arr = np.array(g_mask)
             overlay = np.array(img_orig).copy()
-            # Green tint for segmented glandular epithelium
-            overlay[g_mask_arr > 127] = [0, 200, 50]
-            img_gland = Image.fromarray(cv2.addWeighted(np.array(img_orig), 0.6, overlay, 0.4, 0))
+            # Cyan / Blue-Green tint for segmented glandular epithelium
+            overlay[g_mask_arr > 127] = [0, 210, 180]
+            img_gland = Image.fromarray(cv2.addWeighted(np.array(img_orig), 0.65, overlay, 0.35, 0))
             img_gland.save(str(gland_path))
         else:
             img_orig.save(str(gland_path))
         paths["glands"] = str(gland_path)
 
-        # 3. Nuclear Phenotyping Overlay
+        # 3. Nuclear Phenotyping Overlay (Green Contours + Red Centroid Dots)
         nuc_path = case_dir / "nuclei.png"
         n_over_file = None
         if nuclei_overlay_path and Path(nuclei_overlay_path).exists():
@@ -96,7 +96,24 @@ class CaseVisualizer:
             img_orig.save(str(nuc_path))
         paths["nuclei"] = str(nuc_path)
 
-        # 4. AI-Prioritized Regions Overlay
+        # 4. Combined Gland + Nuclear Overlay (Multi-Morphology Fusion)
+        comb_path = case_dir / "combined.png"
+        img_comb = cv2.imread(str(nuc_path)) if nuc_path.exists() else cv2.imread(str(image_path))
+        if g_mask_file and g_mask_file.exists() and img_comb is not None:
+            g_mask = Image.open(g_mask_file).convert("L").resize(img_orig.size, Image.Resampling.NEAREST)
+            g_mask_arr = np.array(g_mask)
+            # Draw distinct cyan gland boundary contours on top of the nuclear overlay
+            g_contours, _ = cv2.findContours(g_mask_arr, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            cv2.drawContours(img_comb, g_contours, -1, (255, 180, 0), 2) # Cyan/Amber outline in BGR
+            cv2.imwrite(str(comb_path), img_comb)
+        else:
+            if img_comb is not None:
+                cv2.imwrite(str(comb_path), img_comb)
+            else:
+                img_orig.save(str(comb_path))
+        paths["combined"] = str(comb_path)
+
+        # 5. AI-Prioritized Regions Overlay
         reg_path = case_dir / "regions.png"
         img_reg = img_orig.copy()
         draw = ImageDraw.Draw(img_reg)

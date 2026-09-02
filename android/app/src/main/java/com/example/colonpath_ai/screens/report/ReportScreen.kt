@@ -2,6 +2,7 @@ package com.example.colonpath_ai.screens.report
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import androidx.core.content.FileProvider
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -130,6 +131,13 @@ fun ReportScreen(
     val glandPerim = gland?.mean_perimeter_pixels ?: 312.5
     val glandCirc = gland?.mean_circularity ?: 0.68
 
+    var overlayBitmap by remember { mutableStateOf<Bitmap?>(ColonPathRepository.selectedBitmap) }
+    
+    LaunchedEffect(effectiveCaseId) {
+        val bmp = ColonPathApiClient.fetchVisualizationBitmap(effectiveCaseId, "nuclei")
+        if (bmp != null) overlayBitmap = bmp
+    }
+
     fun shareFile(context: Context, file: File, mimeType: String) {
         try {
             val uri = FileProvider.getUriForFile(
@@ -152,14 +160,10 @@ fun ReportScreen(
         return try {
             val sb = StringBuilder()
             sb.appendLine("Metric,Reference Baseline,Patient ($effectiveCaseId)")
-            sb.appendLine("\"Nuclei Count\",\"1200\",\"$nucCount\"")
-            sb.appendLine("\"Nuclear Density\",\"98.5 /mm²\",\"${String.format("%.1f", nucCount * 0.076)} /mm²\"")
-            sb.appendLine("\"Mean Nuclear Area\",\"38.6 px²\",\"${String.format("%.1f", nucArea)} px²\"")
-            sb.appendLine("\"Nuclear Circularity\",\"0.86\",\"${String.format("%.2f", nucCirc)}\"")
-            sb.appendLine("\"Gland Count\",\"162\",\"$glandCount\"")
-            sb.appendLine("\"Gland Density\",\"12.8 /mm²\",\"${String.format("%.1f", glandCount * 0.076)} /mm²\"")
-            sb.appendLine("\"Mean Gland Area\",\"3,420 px²\",\"${String.format("%.0f", glandArea)} px²\"")
-            sb.appendLine("\"Gland Irregularity\",\"0.31\",\"${String.format("%.2f", 1.0 - glandCirc)}\"")
+            sb.appendLine("\"Nuclei Count / Density\",\"180 cells / 98.5 mm⁻²\",\"$nucCount cells / ${String.format("%.1f", nucCount * 0.076)} mm⁻²\"")
+            sb.appendLine("\"Mean Nuclear Area / Circularity\",\"38.6 px² / 0.86\",\"${String.format("%.1f", nucArea)} px² / ${String.format("%.2f", nucCirc)}\"")
+            sb.appendLine("\"Gland Count / Density\",\"16 glands / 12.8 mm⁻²\",\"$glandCount glands / ${String.format("%.1f", glandCount * 0.076)} mm⁻²\"")
+            sb.appendLine("\"Mean Gland Area / Irregularity\",\"3,420 px² / 0.31\",\"${String.format("%.0f", glandArea)} px² / ${String.format("%.2f", 1.0 - glandCirc)}\"")
             
             val file = File(context.getExternalFilesDir(null), "colonpath_analysis_table_${effectiveCaseId}.csv")
             file.writeText(sb.toString())
@@ -178,7 +182,7 @@ fun ReportScreen(
                 timestamp = "31 Aug 2026",
                 status = "COMPLETED"
             ),
-            specimenBitmap = ColonPathRepository.selectedBitmap
+            specimenBitmap = overlayBitmap ?: ColonPathRepository.selectedBitmap
         )
         return if (file != null) {
             shareFile(context, file, "application/pdf")
