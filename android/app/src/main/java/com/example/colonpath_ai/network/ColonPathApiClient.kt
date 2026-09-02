@@ -12,8 +12,16 @@ import java.net.URL
 import java.util.UUID
 
 object ColonPathApiClient {
-    // Configurable API base URL (10.0.2.2 for Android Emulator, 127.0.0.1 / Local LAN IP for devices)
     var baseUrl: String = "http://127.0.0.1:8000"
+
+    private fun getCandidateHosts(): List<String> {
+        return listOf(
+            baseUrl,
+            "http://127.0.0.1:8000",
+            "http://192.168.1.7:8000",
+            "http://10.0.2.2:8000"
+        ).distinct()
+    }
 
     /**
      * Uploads an H&E image and executes the full dynamic CV + multimodal pipeline on FastAPI backend.
@@ -23,66 +31,68 @@ object ColonPathApiClient {
         caseId: String? = null,
         fileName: String = "specimen.png"
     ): Result<CaseResultDto> = withContext(Dispatchers.IO) {
-        try {
-            val boundary = "Boundary-" + UUID.randomUUID().toString()
-            val url = URL("${baseUrl.trimEnd('/')}/analyze")
-            val conn = (url.openConnection() as HttpURLConnection).apply {
-                requestMethod = "POST"
-                doInput = true
-                doOutput = true
-                useCaches = false
-                connectTimeout = 60000
-                readTimeout = 300000
-                setRequestProperty("Content-Type", "multipart/form-data; boundary=$boundary")
-                setRequestProperty("Accept", "application/json")
-                setRequestProperty("Connection", "Keep-Alive")
-            }
+        var lastException: Exception? = null
 
-            val outputStream = DataOutputStream(conn.outputStream)
-            val lineEnd = "\r\n"
-            val twoHyphens = "--"
+        for (host in getCandidateHosts()) {
+            try {
+                val boundary = "Boundary-" + UUID.randomUUID().toString()
+                val url = URL("${host.trimEnd('/')}/analyze")
+                val conn = (url.openConnection() as HttpURLConnection).apply {
+                    requestMethod = "POST"
+                    doInput = true
+                    doOutput = true
+                    useCaches = false
+                    connectTimeout = 30000
+                    readTimeout = 300000
+                    setRequestProperty("Content-Type", "multipart/form-data; boundary=$boundary")
+                    setRequestProperty("Accept", "application/json")
+                    setRequestProperty("Connection", "Keep-Alive")
+                }
 
-            // 1. Write case_id field if present
-            if (!caseId.isNullOrBlank()) {
+                val outputStream = DataOutputStream(conn.outputStream)
+                val lineEnd = "\r\n"
+                val twoHyphens = "--"
+
+                // 1. Write case_id field if present
+                if (!caseId.isNullOrBlank()) {
+                    outputStream.writeBytes(twoHyphens + boundary + lineEnd)
+                    outputStream.writeBytes("Content-Disposition: form-data; name=\"case_id\"$lineEnd$lineEnd")
+                    outputStream.writeBytes(caseId + lineEnd)
+                }
+
+                // 2. Write image file part
                 outputStream.writeBytes(twoHyphens + boundary + lineEnd)
-                outputStream.writeBytes("Content-Disposition: form-data; name=\"case_id\"$lineEnd$lineEnd")
-                outputStream.writeBytes(caseId + lineEnd)
+                outputStream.writeBytes("Content-Disposition: form-data; name=\"image\"; filename=\"$fileName\"$lineEnd")
+                outputStream.writeBytes("Content-Type: image/png$lineEnd$lineEnd")
+
+                val byteStream = ByteArrayOutputStream()
+                imageBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream)
+                val imageBytes = byteStream.toByteArray()
+                outputStream.write(imageBytes)
+                outputStream.writeBytes(lineEnd)
+
+                // 3. End boundary
+                outputStream.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd)
+                outputStream.flush()
+                outputStream.close()
+
+                val responseCode = conn.responseCode
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+                    val responseText = conn.inputStream.bufferedReader().use { it.readText() }
+                    val json = JSONObject(responseText)
+                    val dto = parseCaseResultDto(json)
+                    baseUrl = host // Cache working host
+                    return@withContext Result.success(dto)
+                } else {
+                    val errorText = conn.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
+                    val errDto = parseApiError(errorText, responseCode)
+                    return@withContext Result.failure(Exception(errDto.message))
+                }
+            } catch (e: Exception) {
+                lastException = e
             }
-
-            // 2. Write image file part
-            outputStream.writeBytes(twoHyphens + boundary + lineEnd)
-            outputStream.writeBytes("Content-Disposition: form-data; name=\"image\"; filename=\"$fileName\"$lineEnd")
-            outputStream.writeBytes("Content-Type: image/png$lineEnd$lineEnd")
-
-            val byteStream = ByteArrayOutputStream()
-            imageBitmap.compress(Bitmap.CompressFormat.PNG, 100, byteStream)
-            val imageBytes = byteStream.toByteArray()
-            outputStream.write(imageBytes)
-            outputStream.writeBytes(lineEnd)
-
-            // 3. End boundary
-            outputStream.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd)
-            outputStream.flush()
-            outputStream.close()
-
-            val responseCode = conn.responseCode
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                val responseText = conn.inputStream.bufferedReader().use { it.readText() }
-                val json = JSONObject(responseText)
-                val dto = parseCaseResultDto(json)
-                Result.success(dto)
-            } else {
-                val errorText = conn.errorStream?.bufferedReader()?.use { it.readText() } ?: ""
-                val errDto = parseApiError(errorText, responseCode)
-                Result.failure(Exception(errDto.message))
-            }
-        } catch (e: java.net.SocketTimeoutException) {
-            Result.failure(Exception("Request timed out while analyzing specimen. The server may still be processing heavy tile inference."))
-        } catch (e: java.net.ConnectException) {
-            Result.failure(Exception("Unable to connect to ColonPath-AI server at $baseUrl. Ensure backend is running."))
-        } catch (e: Exception) {
-            Result.failure(e)
         }
+        Result.failure(lastException ?: Exception("Unable to connect to ColonPath-AI backend server."))
     }
 
     fun parseApiError(errorText: String, statusCode: Int): ApiErrorDto {

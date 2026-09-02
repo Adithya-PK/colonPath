@@ -1,4 +1,4 @@
-﻿package com.example.colonpath_ai.screens.newcase
+package com.example.colonpath_ai.screens.newcase
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -72,45 +72,6 @@ fun ImageSelectionScreen(
         }
     }
 
-    // Function to load Cancer Sample
-    fun loadCancerSample() {
-        try {
-            val bmp = BitmapFactory.decodeResource(context.resources, R.drawable.demo_sample_raw)
-            if (bmp != null) {
-                SampleDataRepository.selectedBitmap = bmp
-                SampleDataRepository.selectedImageName = "colorectal_adenocarcinoma_sample.png"
-                ColonPathRepository.selectedBitmap = bmp
-                ColonPathRepository.selectedImageName = "colorectal_adenocarcinoma_sample.png"
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    // Function to load Healthy Normal Mucosa Sample
-    fun loadHealthySample() {
-        try {
-            val rawBmp = BitmapFactory.decodeResource(context.resources, R.drawable.demo_sample_raw)
-            if (rawBmp != null) {
-                // Synthesize healthy mucosa variant with regular crypt architecture tint
-                val healthyBmp = Bitmap.createBitmap(rawBmp.width, rawBmp.height, Bitmap.Config.ARGB_8888)
-                val canvas = Canvas(healthyBmp)
-                canvas.drawBitmap(rawBmp, 0f, 0f, null)
-                val paint = Paint().apply {
-                    color = Color.argb(40, 240, 210, 235) // Light physiological eosinophilic hue
-                }
-                canvas.drawRect(0f, 0f, rawBmp.width.toFloat(), rawBmp.height.toFloat(), paint)
-
-                SampleDataRepository.selectedBitmap = healthyBmp
-                SampleDataRepository.selectedImageName = "healthy_normal_mucosa_sample.png"
-                ColonPathRepository.selectedBitmap = healthyBmp
-                ColonPathRepository.selectedImageName = "healthy_normal_mucosa_sample.png"
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -165,47 +126,6 @@ fun ImageSelectionScreen(
                         subtitle = "USB / OTG Camera",
                         onClick = onLiveMicroscope
                     )
-                }
-            }
-
-            // Demo Benchmark Presets (One-tap test for Cancer vs Healthy)
-            item {
-                SectionHeader(
-                    title = "Quick Benchmark Presets",
-                    subtitle = "Test AI classification on validated specimen archetypes"
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Surface(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clickable { loadCancerSample() },
-                        shape = RoundedCornerShape(10.dp),
-                        color = RedLight.copy(alpha = 0.5f),
-                        border = BorderStroke(1.dp, RedError.copy(alpha = 0.3f))
-                    ) {
-                        Column(modifier = Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("🔬 Cancer Specimen", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelMedium, color = RedError)
-                            Text("Adenocarcinoma (TUM)", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
-                        }
-                    }
-
-                    Surface(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clickable { loadHealthySample() },
-                        shape = RoundedCornerShape(10.dp),
-                        color = GreenSuccess.copy(alpha = 0.1f),
-                        border = BorderStroke(1.dp, GreenSuccess.copy(alpha = 0.3f))
-                    ) {
-                        Column(modifier = Modifier.padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("🌿 Healthy Specimen", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.labelMedium, color = GreenSuccess)
-                            Text("Normal Mucosa (NORM)", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
-                        }
-                    }
                 }
             }
 
