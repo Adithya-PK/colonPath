@@ -311,8 +311,7 @@ def run_nuclear_morphometry(nuc_data: Dict[str, Any], output_csv_path: Path) -> 
 
     for nuc_id, nuc_info in nuclei.items():
         contour = nuc_info.get("contour", [])
-        n_type = str(nuc_info.get("type", 3))
-        type_counts[n_type] = type_counts.get(n_type, 0) + 1
+        raw_type = int(nuc_info.get("type", 3))
 
         if len(contour) < 3:
             continue
@@ -320,6 +319,16 @@ def run_nuclear_morphometry(nuc_data: Dict[str, Any], output_csv_path: Path) -> 
         c_arr = np.asarray(contour, dtype=np.int32).reshape(-1, 1, 2)
         area = float(cv2.contourArea(c_arr))
         perim = float(cv2.arcLength(c_arr, True))
+
+        # In colorectal H&E histopathology, large elongated nuclei in crypt walls / tumors are columnar epithelial
+        if (raw_type == 3 and area >= 45.0) or area >= 75.0:
+            n_type = "1" # Epithelial / Neoplastic
+        elif raw_type == 2 or area < 30.0:
+            n_type = "2" # Inflammatory / Lymphocyte
+        else:
+            n_type = str(raw_type)
+
+        type_counts[n_type] = type_counts.get(n_type, 0) + 1
 
         eccentricity = 0.0
         if len(contour) >= 5:

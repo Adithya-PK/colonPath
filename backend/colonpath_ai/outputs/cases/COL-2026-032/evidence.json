@@ -1,0 +1,24 @@
+{
+  "case_id": "COL-2026-032",
+  "timestamp": "2026-09-02T19:44:41.076464+00:00",
+  "prediction_class": "LYM",
+  "prediction_confidence": 0.948,
+  "calibrated_confidence": 0.948,
+  "tumor_probability": 0.024,
+  "uncertainty_score": 0.085,
+  "uncertainty_level": "LOW",
+  "ood_score": 1.0,
+  "ood_status": "IN_DISTRIBUTION",
+  "agreement_level": "MEDIUM",
+  "nuclear_total_count": 117,
+  "nuclear_mean_area_px2": 98.95,
+  "gland_total_count": 11,
+  "gland_mean_circularity": 0.721,
+  "priority_regions_count": 4,
+  "region_ids": [
+    "R_01",
+    "R_03",
+    "R_04",
+    "R_02"
+  ]
+}

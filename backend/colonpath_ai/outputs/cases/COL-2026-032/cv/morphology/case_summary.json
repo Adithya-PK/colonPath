@@ -1,0 +1,25 @@
+{
+  "case_id": "COL-2026-032",
+  "nuclei": {
+    "total": 117,
+    "types": {
+      "1": 83,
+      "2": 2,
+      "3": 30,
+      "4": 2
+    },
+    "mean_area_px2": 98.95299145299145,
+    "mean_perimeter_px": 43.2910893106053,
+    "mean_eccentricity": 0.6950442110393199,
+    "mean_circularity": 0.665149600518772
+  },
+  "glands": {
+    "total": 11,
+    "mean_area_pixels": 1478.8181818181818,
+    "mean_perimeter_pixels": 154.88335817510432,
+    "mean_width_pixels": 36.09090909090909,
+    "mean_height_pixels": 40.54545454545455,
+    "mean_aspect_ratio": 1.33968372675134,
+    "mean_circularity": 0.7205020174482102
+  }
+}
