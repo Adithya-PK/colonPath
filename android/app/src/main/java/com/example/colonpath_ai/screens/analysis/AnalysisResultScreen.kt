@@ -522,8 +522,22 @@ fun AnalysisResultScreen(
             item {
                 Button(
                     onClick = {
+                        val dateStr = java.text.SimpleDateFormat("dd MMM yyyy", java.util.Locale.getDefault()).format(java.util.Date())
+                        val savedCase = com.example.colonpath_ai.model.Case(
+                            caseId = caseId,
+                            patient = com.example.colonpath_ai.model.PatientInfo(
+                                patientId = "PT-${caseId.takeLast(4)}",
+                                patientName = "Specimen ${caseId.takeLast(4)}"
+                            ),
+                            tissue = "Colorectal",
+                            sampleType = "Biopsy",
+                            stain = "H&E",
+                            analysisDate = dateStr,
+                            status = com.example.colonpath_ai.model.CaseStatus.PENDING_REVIEW
+                        )
+                        com.example.colonpath_ai.data.SampleDataRepository.addCase(savedCase)
                         isCaseSaved = true
-                        Toast.makeText(context, "Case $caseId successfully saved to History!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Case $caseId saved to Case History (Pending Review)!", Toast.LENGTH_SHORT).show()
                     },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),

@@ -1,4 +1,4 @@
-﻿package com.example.colonpath_ai.screens.casedetails
+package com.example.colonpath_ai.screens.casedetails
 
 import android.graphics.Bitmap
 import android.widget.Toast
@@ -46,7 +46,7 @@ fun CaseDetailsScreen(
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     // Status Dropdown State
-    var currentStatus by remember { mutableStateOf(CaseStatus.COMPLETED) }
+    var currentStatus by remember { mutableStateOf(CaseStatus.PENDING_REVIEW) }
     var isStatusDropdownExpanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(caseId) {
@@ -54,9 +54,7 @@ fun CaseDetailsScreen(
             ColonPathRepository.loadCaseResult(caseId)
         }
         val sample = SampleDataRepository.getCaseById(caseId)
-        if (sample != null) {
-            currentStatus = sample.status
-        }
+        currentStatus = sample?.status ?: CaseStatus.PENDING_REVIEW
         isLoadingOverlay = true
         val bmp = ColonPathApiClient.fetchVisualizationBitmap(caseId, "nuclei")
         overlayBitmap = bmp ?: ColonPathRepository.selectedBitmap
@@ -87,9 +85,9 @@ fun CaseDetailsScreen(
     val uEntropy = (unc?.normalized_entropy ?: 0.182).coerceIn(0.085, 0.450)
 
     val statusOptions = listOf(
-        CaseStatus.COMPLETED to "Completed",
         CaseStatus.PENDING_REVIEW to "Pending Review",
         CaseStatus.IN_PROGRESS to "In Progress",
+        CaseStatus.COMPLETED to "Completed",
         CaseStatus.FAILED to "Failed"
     )
 
