@@ -1,4 +1,4 @@
-﻿package com.example.colonpath_ai.screens.analysis
+package com.example.colonpath_ai.screens.analysis
 
 import android.graphics.Bitmap
 import androidx.compose.foundation.BorderStroke
@@ -358,15 +358,61 @@ fun AnalysisResultScreen(
 
             // 9. Interactive Action Buttons
             item {
-                Button(
-                    onClick = { showCopilotDialog = true },
+                Column(
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Blue500)
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Icon(Icons.Outlined.Psychology, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Ask Pathologist Copilot (MedGemma)")
+                    // Primary Action: Full Diagnostic Report (PDF)
+                    Button(
+                        onClick = onReport,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Navy800)
+                    ) {
+                        Icon(Icons.Outlined.Description, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("View AI Diagnostic Report & PDF")
+                    }
+
+                    // Secondary Actions: Detailed Morphometry & Cohort Comparison
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = onMorphology,
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(12.dp),
+                            border = BorderStroke(1.dp, Blue500.copy(alpha = 0.5f))
+                        ) {
+                            Icon(Icons.Outlined.Biotech, contentDescription = null, modifier = Modifier.size(16.dp), tint = Blue500)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Morphometry", color = Blue500)
+                        }
+
+                        OutlinedButton(
+                            onClick = onComparison,
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(12.dp),
+                            border = BorderStroke(1.dp, Blue500.copy(alpha = 0.5f))
+                        ) {
+                            Icon(Icons.Outlined.CompareArrows, contentDescription = null, modifier = Modifier.size(16.dp), tint = Blue500)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Comparison", color = Blue500)
+                        }
+                    }
+
+                    // Copilot Inquiry Action
+                    Button(
+                        onClick = { showCopilotDialog = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Blue500)
+                    ) {
+                        Icon(Icons.Outlined.Psychology, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Ask Pathologist Copilot (MedGemma)")
+                    }
                 }
                 Spacer(modifier = Modifier.height(80.dp))
             }
