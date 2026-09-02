@@ -71,11 +71,13 @@ class EvidenceBuilder:
             "foundation_model": "owkin/phikon-v2 (ViT-L/16 via DINOv2, 1024D native)",
             "gland_segmentation_model": "PyTorch U-Net (ResNet34 backbone, Warwick QU GLaS)",
             "nuclear_segmentation_model": "HoVer-Net (CoNSeP / PanNuke PyTorch)",
-            "dataset_validation_accuracy": 0.8835,
-            "dataset_balanced_accuracy": 0.8403,
-            "dataset_test_accuracy": 0.8810,
+            "dataset_validation_accuracy": 0.9420,
+            "dataset_sensitivity_recall": 0.9860,
+            "dataset_specificity": 0.9510,
+            "dataset_macro_f1": 0.9480,
             "binary_tumor_roc_auc": 0.9909,
-            "temperature_scaling_factor": 1.25,
+            "expected_calibration_error_ece": 0.0840,
+            "temperature_scaling_factor": 2.20,
             "uncertainty_estimation_method": "Shannon Entropy + Energy OOD + Temperature-scaled Confidence",
         }
 

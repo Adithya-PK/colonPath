@@ -238,6 +238,30 @@ object ColonPathApiClient {
         }
     }
 
+
+
+    /**
+     * Downloads CSV morphometry comparison table as text.
+     */
+    suspend fun getCaseCsvText(caseId: String): Result<String> = withContext(Dispatchers.IO) {
+        try {
+            val url = URL("${baseUrl.trimEnd('/')}/cases/$caseId/csv")
+            val conn = (url.openConnection() as HttpURLConnection).apply {
+                requestMethod = "GET"
+                connectTimeout = 15000
+                readTimeout = 30000
+            }
+            if (conn.responseCode == HttpURLConnection.HTTP_OK) {
+                val text = conn.inputStream.bufferedReader().use { it.readText() }
+                Result.success(text)
+            } else {
+                Result.failure(Exception("Failed to download CSV (HTTP ${conn.responseCode})"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     /**
      * Builds visualization endpoint URL for streaming overlays into ImageViewer.
      */

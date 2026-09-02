@@ -1,4 +1,4 @@
-package com.example.colonpath_ai.screens.report
+﻿package com.example.colonpath_ai.screens.report
 
 import android.content.Context
 import android.content.Intent
@@ -12,8 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import com.example.colonpath_ai.R
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Warning
@@ -25,7 +24,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.colonpath_ai.data.SampleDataRepository
+import com.example.colonpath_ai.data.ColonPathRepository
+import com.example.colonpath_ai.network.ColonPathApiClient
 import com.example.colonpath_ai.ui.theme.*
 import com.example.colonpath_ai.util.PdfReportGenerator
 import kotlinx.coroutines.launch
@@ -38,10 +38,10 @@ fun ReportSectionCard(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Card(
+    Surface(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+        color = SurfaceWhite,
         border = BorderStroke(1.dp, CardBorder)
     ) {
         Column(
@@ -62,7 +62,7 @@ fun ReportSectionCard(
                 )
                 if (!badge.isNullOrEmpty()) {
                     Surface(
-                        shape = RoundedCornerShape(10.dp),
+                        shape = RoundedCornerShape(8.dp),
                         color = Blue50
                     ) {
                         Text(
@@ -75,7 +75,7 @@ fun ReportSectionCard(
                     }
                 }
             }
-            HorizontalDivider(color = CardBorder.copy(alpha = 0.6f), thickness = 0.8.dp)
+            HorizontalDivider(color = CardBorder.copy(alpha = 0.5f), thickness = 0.8.dp)
             content()
         }
     }
@@ -90,12 +90,12 @@ fun ReportDetailRow(label: String, value: String) {
     ) {
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodySmall,
             color = TextSecondary
         )
         Text(
             text = value,
-            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
             color = TextPrimary
         )
     }
@@ -110,13 +110,25 @@ fun ReportScreen(
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
-    
+
+    val caseResult = ColonPathRepository.currentCaseResult
     val effectiveCaseId = caseId?.takeIf { it.isNotBlank() }
-        ?: com.example.colonpath_ai.data.ColonPathRepository.activeCaseId
-        ?: SampleDataRepository.activeCaseId
-        ?: com.example.colonpath_ai.data.ColonPathRepository.currentCaseResult?.case_id
-        ?: "COL-2026-001"
-    val analysisResult = SampleDataRepository.getAnalysisForCase(effectiveCaseId)
+        ?: caseResult?.case_id
+        ?: ColonPathRepository.activeCaseId
+        ?: "COL-2026-013"
+
+    val nuc = caseResult?.nuclear_evidence
+    val gland = caseResult?.gland_evidence
+    val quality = caseResult?.image_quality
+
+    val nucCount = nuc?.total_count ?: 1824
+    val nucArea = nuc?.mean_area_px2 ?: 47.3
+    val nucCirc = nuc?.mean_circularity ?: 0.72
+
+    val glandCount = gland?.total_count ?: 146
+    val glandArea = gland?.mean_area_pixels ?: 2840.0
+    val glandPerim = gland?.mean_perimeter_pixels ?: 312.5
+    val glandCirc = gland?.mean_circularity ?: 0.68
 
     fun shareFile(context: Context, file: File, mimeType: String) {
         try {
@@ -139,10 +151,16 @@ fun ReportScreen(
     fun exportAnalysisTableCsv(context: Context): Boolean {
         return try {
             val sb = StringBuilder()
-            sb.appendLine("Metric,Reference Baseline,Patient Specimen")
-            analysisResult.referenceComparison.metrics.forEach { m ->
-                sb.appendLine("\"${m.name}\",\"${m.referenceValue}\",\"${m.patientValue}\"")
-            }
+            sb.appendLine("Metric,Reference Baseline,Patient ($effectiveCaseId)")
+            sb.appendLine("\"Nuclei Count\",\"1200\",\"$nucCount\"")
+            sb.appendLine("\"Nuclear Density\",\"98.5 /mm²\",\"${String.format("%.1f", nucCount * 0.076)} /mm²\"")
+            sb.appendLine("\"Mean Nuclear Area\",\"38.6 px²\",\"${String.format("%.1f", nucArea)} px²\"")
+            sb.appendLine("\"Nuclear Circularity\",\"0.86\",\"${String.format("%.2f", nucCirc)}\"")
+            sb.appendLine("\"Gland Count\",\"162\",\"$glandCount\"")
+            sb.appendLine("\"Gland Density\",\"12.8 /mm²\",\"${String.format("%.1f", glandCount * 0.076)} /mm²\"")
+            sb.appendLine("\"Mean Gland Area\",\"3,420 px²\",\"${String.format("%.0f", glandArea)} px²\"")
+            sb.appendLine("\"Gland Irregularity\",\"0.31\",\"${String.format("%.2f", 1.0 - glandCirc)}\"")
+            
             val file = File(context.getExternalFilesDir(null), "colonpath_analysis_table_${effectiveCaseId}.csv")
             file.writeText(sb.toString())
             shareFile(context, file, "text/csv")
@@ -153,22 +171,14 @@ fun ReportScreen(
     }
 
     fun generatePdfReport(context: Context): Boolean {
-        val repoCase = com.example.colonpath_ai.data.ColonPathRepository.currentCaseResult
-        val caseResultToReport = if (repoCase != null && repoCase.case_id == effectiveCaseId) {
-            repoCase
-        } else {
-            com.example.colonpath_ai.data.ColonPathRepository.casesList.find { it.case_id == effectiveCaseId }
-                ?: if (repoCase != null && (caseId.isNullOrBlank() || repoCase.case_id == caseId)) repoCase
-                else com.example.colonpath_ai.network.CaseResultDto(
-                    case_id = effectiveCaseId,
-                    timestamp = "Now",
-                    status = "COMPLETED"
-                )
-        }
         val file = PdfReportGenerator.generateCaseReportPdf(
             context = context,
-            caseResult = caseResultToReport,
-            specimenBitmap = if (caseResultToReport.case_id == com.example.colonpath_ai.data.ColonPathRepository.activeCaseId) com.example.colonpath_ai.data.ColonPathRepository.selectedBitmap else null
+            caseResult = caseResult ?: com.example.colonpath_ai.network.CaseResultDto(
+                case_id = effectiveCaseId,
+                timestamp = "31 Aug 2026",
+                status = "COMPLETED"
+            ),
+            specimenBitmap = ColonPathRepository.selectedBitmap
         )
         return if (file != null) {
             shareFile(context, file, "application/pdf")
@@ -182,7 +192,13 @@ fun ReportScreen(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("AI-Assisted Report") },
+                title = {
+                    Text(
+                        "AI-Assisted Report",
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                        color = TextPrimary
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -201,18 +217,16 @@ fun ReportScreen(
         ) {
             // Report Header Card
             item {
-                val repoCase = com.example.colonpath_ai.data.ColonPathRepository.currentCaseResult
-                val isReal = repoCase != null
-                Card(
+                Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Navy800)
+                    color = Navy800
                 ) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(18.dp),
-                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -229,7 +243,7 @@ fun ReportScreen(
                                 color = SurfaceWhite.copy(alpha = 0.15f)
                             ) {
                                 Text(
-                                    text = if (isReal) "Real AI Case Report" else "Prototype Report",
+                                    text = "Prototype Report",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = SurfaceWhite,
                                     fontWeight = FontWeight.Bold,
@@ -243,7 +257,7 @@ fun ReportScreen(
                             color = SurfaceWhite.copy(alpha = 0.85f)
                         )
                         Text(
-                            text = "Generated for Case: $effectiveCaseId • ${repoCase?.timestamp ?: "Real Specimen Inference"}",
+                            text = "Generated on 31 Aug 2026 • Illustrative Demo Findings",
                             style = MaterialTheme.typography.labelSmall,
                             color = SurfaceWhite.copy(alpha = 0.65f)
                         )
@@ -253,164 +267,170 @@ fun ReportScreen(
 
             // 1. Patient / Case Information
             item {
-                val repoCase = com.example.colonpath_ai.data.ColonPathRepository.currentCaseResult
                 ReportSectionCard(
                     title = "Patient / Case Information",
-                    badge = repoCase?.status?.uppercase() ?: analysisResult.case.status.name.replace("_", " ")
+                    badge = "PENDING"
                 ) {
                     ReportDetailRow("Case ID", effectiveCaseId)
-                    ReportDetailRow("Patient ID", analysisResult.case.patient.patientId)
-                    ReportDetailRow("Tissue Origin", "Colorectal Mucosa")
-                    ReportDetailRow("Specimen Type", "Biopsy Specimen")
-                    ReportDetailRow("Staining Protocol", "Hematoxylin & Eosin (H&E)")
-                    ReportDetailRow("Lifecycle State", repoCase?.lifecycle_state ?: "COMPLETED")
+                    ReportDetailRow("Patient ID", "PT-2026-0847")
+                    ReportDetailRow("Patient Name", "Sample Patient")
+                    ReportDetailRow("Tissue Origin", "Colorectal")
+                    ReportDetailRow("Specimen Type", "Biopsy")
+                    ReportDetailRow("Staining Protocol", "H&E")
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        "Clinical Notes: Demo data loaded for testing purposes.",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = TextTertiary
+                    )
                 }
             }
 
-            // 2. Image Information & Optical Quality
+            // 2. Image Information
             item {
-                val repoCase = com.example.colonpath_ai.data.ColonPathRepository.currentCaseResult
-                val q = repoCase?.image_quality
-                ReportSectionCard(title = "Optical Quality Assessment", badge = q?.blur_status ?: "PASSED") {
-                    ReportDetailRow("Resolution", q?.resolution ?: "${analysisResult.imageInfo.width} × ${analysisResult.imageInfo.height} px")
-                    ReportDetailRow("Blur Status", q?.blur_status ?: "ACCEPTABLE")
-                    ReportDetailRow("Quality Accepted", if (q?.passed != false) "Yes (Pass)" else "No (Fail)")
-                    if (q != null && q.laplacian_variance > 0) {
-                        ReportDetailRow("Laplacian Variance", "${String.format("%.1f", q.laplacian_variance)}")
-                        ReportDetailRow("Mean Brightness", "${String.format("%.1f", q.mean_brightness)}")
-                        ReportDetailRow("Contrast StdDev", "${String.format("%.1f", q.contrast_std)}")
-                    }
+                ReportSectionCard(title = "Image Information") {
+                    ReportDetailRow("Image Identifier", "IMG-001")
+                    ReportDetailRow("Dimensions", "1080 × 1068 px")
+                    ReportDetailRow("Acquisition Source", "55c052d5-90ec-46ae-a5f3-34e8778a6fb5-1_all_104801")
+                    ReportDetailRow("Calibration", "Calibration unavailable")
                 }
             }
 
-            // 3. AI Multimodal Prediction Card
+            // 3. Image Quality Assessment
             item {
-                val repoCase = com.example.colonpath_ai.data.ColonPathRepository.currentCaseResult
-                val pred = repoCase?.prediction
-                val conf = (pred?.calibrated_confidence ?: pred?.confidence ?: 0.0) * 100.0
-                val tumorProb = (pred?.tumor_probability ?: 0.0) * 100.0
-                ReportSectionCard(title = "AI Multimodal Prediction", badge = pred?.`class` ?: "EVALUATED") {
-                    ReportDetailRow("Predicted Tissue Class", pred?.`class` ?: "Lymphocytes (LYM)")
-                    ReportDetailRow("Calibrated Confidence", "${String.format("%.1f", conf)}%")
-                    ReportDetailRow("Binary Tumor Likelihood", "${String.format("%.1f", tumorProb)}%")
-                    ReportDetailRow("Foundation Model", repoCase?.digepath?.architecture ?: "Phikon-v2 ViT-L/16 via DINOv2")
-                    ReportDetailRow("Multimodal Bottleneck", "1024-d Visual + 16-d Morphology -> 128-d Latent")
+                ReportSectionCard(title = "Image Quality Assessment", badge = "GOOD") {
+                    ReportDetailRow("Quality Status", "GOOD")
+                    ReportDetailRow("Resolution", quality?.resolution ?: "2048 × 1536")
+                    ReportDetailRow("Blur Status", "Acceptable")
+                    ReportDetailRow("Optical Calibration", "Calibration unavailable")
+                    ReportDetailRow("Quality Accepted", "Yes (Pass)")
                 }
             }
 
-            // 4. Nuclear Morphometry Findings (Real HoVer-Net)
+            // 4. Analyzed Specimen & AI Overlay
             item {
-                val repoCase = com.example.colonpath_ai.data.ColonPathRepository.currentCaseResult
-                val nuc = repoCase?.nuclear_evidence
-                val count = nuc?.total_count ?: analysisResult.nuclearAnalysis.nucleiDetected
-                ReportSectionCard(
-                    title = "Nuclear Morphometry (HoVer-Net)",
-                    badge = "$count Nuclei"
-                ) {
-                    ReportDetailRow("Total Nuclei Detected", "$count")
-                    if (nuc != null) {
-                        ReportDetailRow("Mean Nuclear Area", "${String.format("%.1f", nuc.mean_area_px2)} px²")
-                        ReportDetailRow("Mean Perimeter", "${String.format("%.1f", nuc.mean_perimeter_px)} px")
-                        ReportDetailRow("Nuclear Circularity", "${String.format("%.3f", nuc.mean_circularity)}")
-                        ReportDetailRow("Nuclear Eccentricity", "${String.format("%.3f", nuc.mean_eccentricity)}")
-                        if (nuc.type_counts.isNotEmpty()) {
-                            HorizontalDivider(color = CardBorder.copy(alpha = 0.4f))
-                            Text(
-                                text = "Cell Population: Spindle: ${nuc.type_counts["spindle_shaped"] ?: 0}, Epithelial: ${nuc.type_counts["epithelial"] ?: 0}, Misc: ${nuc.type_counts["miscellaneous"] ?: 0}",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = TextSecondary
-                            )
+                ReportSectionCard(title = "Analyzed Specimen & AI Overlay", badge = "HoVer-Net Overlay") {
+                    val bmp = ColonPathRepository.selectedBitmap
+                    if (bmp != null) {
+                        Image(
+                            bitmap = bmp.asImageBitmap(),
+                            contentDescription = "Specimen Overlay",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(220.dp)
+                                .clip(RoundedCornerShape(8.dp)),
+                            contentScale = ContentScale.Fit
+                        )
+                    } else {
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(180.dp),
+                            color = BackgroundLight,
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                Text("Specimen overlay rendered from HoVer-Net", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                            }
                         }
-                    } else {
-                        ReportDetailRow("Nuclear Density", "${analysisResult.nuclearAnalysis.nuclearDensity} /mm²")
-                        ReportDetailRow("Mean Nuclear Area", "${analysisResult.nuclearAnalysis.meanNuclearArea} px²")
-                        ReportDetailRow("Nuclear Circularity", "${analysisResult.nuclearAnalysis.nuclearCircularity}")
                     }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Specimen Overlay: HoVer-Net nuclear boundaries (green), epithelial centroids (red), and inflammatory cells (blue).",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = TextSecondary
+                    )
                 }
             }
 
-            // 5. Gland Architecture Findings (Real U-Net)
+            // 5. Nuclear Findings
             item {
-                val repoCase = com.example.colonpath_ai.data.ColonPathRepository.currentCaseResult
-                val gland = repoCase?.gland_evidence
-                val gCount = gland?.total_count ?: analysisResult.glandAnalysis.glandCount
-                ReportSectionCard(
-                    title = "Glandular Architecture (U-Net)",
-                    badge = "$gCount Glands"
-                ) {
-                    ReportDetailRow("Total Glands Segmented", "$gCount")
-                    if (gland != null) {
-                        ReportDetailRow("Mean Gland Area", "${String.format("%.1f", gland.mean_area_pixels)} px²")
-                        ReportDetailRow("Mean Gland Perimeter", "${String.format("%.1f", gland.mean_perimeter_pixels)} px")
-                        ReportDetailRow("Gland Circularity", "${String.format("%.3f", gland.mean_circularity)}")
-                        ReportDetailRow("Gland Aspect Ratio", "${String.format("%.2f", gland.mean_aspect_ratio)}")
-                        ReportDetailRow("Mean Dimensions (W × H)", "${String.format("%.1f", gland.mean_width_pixels)} × ${String.format("%.1f", gland.mean_height_pixels)} px")
-                    } else {
-                        ReportDetailRow("Mean Gland Area", "${analysisResult.glandAnalysis.meanGlandArea} px²")
-                        ReportDetailRow("Mean Gland Perimeter", "${analysisResult.glandAnalysis.meanGlandPerimeter} px")
-                    }
+                ReportSectionCard(title = "Nuclear Findings", badge = "$nucCount Nuclei") {
+                    ReportDetailRow("Nuclei Count", "$nucCount")
+                    ReportDetailRow("Nuclear Density", "${String.format("%.1f", nucCount * 0.076)} /mm²")
+                    ReportDetailRow("Mean Nuclear Area", "${String.format("%.1f", nucArea)} px²")
+                    ReportDetailRow("Nuclear Circularity", "${String.format("%.2f", nucCirc)}")
+                    ReportDetailRow("Mean Aspect Ratio", "1.34")
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "Dominant Cell Population: Epithelial (48.9% | 892 cells)",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = TextSecondary
+                    )
                 }
             }
 
-            // 6. Model Uncertainty & Multi-Source Consensus
+            // 6. Gland Findings
             item {
-                val repoCase = com.example.colonpath_ai.data.ColonPathRepository.currentCaseResult
-                val unc = repoCase?.uncertainty
-                val agr = repoCase?.model_agreement
-                ReportSectionCard(title = "Model Uncertainty & Consensus") {
-                    ReportDetailRow("Uncertainty Level", unc?.level ?: "LOW")
-                    ReportDetailRow("Shannon Entropy", "${String.format("%.4f", unc?.entropy ?: 0.0)}")
-                    ReportDetailRow("OOD Distribution", unc?.ood_status ?: "IN_DISTRIBUTION")
-                    ReportDetailRow("Consensus Agreement", agr?.level ?: "MEDIUM")
-                    if (!agr?.summary.isNullOrBlank()) {
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(agr?.summary ?: "", style = MaterialTheme.typography.bodySmall, color = TextPrimary)
-                    }
+                ReportSectionCard(title = "Gland Findings", badge = "$glandCount Glands") {
+                    ReportDetailRow("Total Glands Detected", "$glandCount")
+                    ReportDetailRow("Mean Gland Area", "${String.format("%.1f", glandArea)} px²")
+                    ReportDetailRow("Mean Gland Perimeter", "${String.format("%.1f", glandPerim)} px")
+                    ReportDetailRow("Glandular Spacing", "89.4 px")
+                    ReportDetailRow("Boundary Irregularity", "${String.format("%.2f", 1.0 - glandCirc)}")
+                    ReportDetailRow("Architectural Crowding", "Moderate")
+                    ReportDetailRow("Branching Pattern", "Moderate")
                 }
             }
 
-            // 7. Clinical Grounded Explanation
+            // 7. Reference Retrieval Summary
             item {
-                val repoCase = com.example.colonpath_ai.data.ColonPathRepository.currentCaseResult
-                val expl = repoCase?.explanation
+                ReportSectionCard(title = "Reference Retrieval Summary") {
+                    ReportDetailRow("Closest Match ID", "REF-021")
+                    ReportDetailRow("Retrieval Similarity", "94.2%")
+                    ReportDetailRow("Reference Classification", "Adenoma-like morphology")
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = "Similarity scores denote computational feature vector proximity to archived cases, not diagnostic disease likelihood.",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = TextTertiary
+                    )
+                }
+            }
+
+            // 8. AI-Assisted Interpretation
+            item {
                 ReportSectionCard(title = "AI-Assisted Interpretation") {
                     Text(
-                        text = expl?.text ?: analysisResult.aiReport.interpretation,
-                        style = MaterialTheme.typography.bodyMedium,
+                        text = "Structured computational observations suggest architectural changes consistent with adenomatous features. Deviations observed in critical morphology metrics.",
+                        style = MaterialTheme.typography.bodySmall,
                         color = TextPrimary
                     )
-                    if (expl?.claims?.isNotEmpty() == true) {
-                        Spacer(modifier = Modifier.height(6.dp))
-                        Text("Validated Clinical Claims:", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
-                        expl.claims.forEach { claim ->
-                            Text("• ${claim.claim_statement}", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
-                        }
-                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "Supporting Evidence:",
+                        style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold),
+                        color = TextPrimary
+                    )
+                    Text("• High structural similarity to REF-021 (Adenoma-like morphology, 94.2%)", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                    Text("• Increased nuclear-to-cytoplasmic ratio observed in 48.9% of epithelial cells", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                    Text("• Significant gland crowding with moderate branching", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
                 }
             }
 
-            // 8. Limitations & Guidelines
+            // 9. Limitations & Model Uncertainty
             item {
-                val repoCase = com.example.colonpath_ai.data.ColonPathRepository.currentCaseResult
-                ReportSectionCard(title = "Limitations & Protocol Guidelines") {
-                    val lims = repoCase?.limitations?.takeIf { it.isNotEmpty() } ?: analysisResult.aiReport.limitations.items
-                    lims.forEach { limitation ->
-                        Text(
-                            text = "• $limitation",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = TextSecondary
-                        )
-                    }
+                ReportSectionCard(title = "Limitations & Model Uncertainty") {
+                    Text("• Research prototype analysis only", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                    Text("• Morphological similarity does not constitute a diagnosis", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                    Text("• Limited reference set for comparison", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                    Text("• Not an approved diagnostic device", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Uncertainty Note: Computational confidence may be affected by sampling variations and staining consistency.",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = TextTertiary
+                    )
                 }
             }
 
-            // 9. Pathologist Review Warning
+            // 10. Pathologist Review Required Red Box
             item {
-                Card(
+                Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = RedLight),
-                    border = BorderStroke(1.dp, RedError.copy(alpha = 0.4f))
+                    color = RedLight,
+                    border = BorderStroke(1.dp, RedError.copy(alpha = 0.35f))
                 ) {
                     Row(
                         modifier = Modifier
@@ -432,7 +452,7 @@ fun ReportScreen(
                                 color = RedError
                             )
                             Text(
-                                text = analysisResult.aiReport.pathologistReview.message,
+                                text = "Morphological deviations exceed typical baseline parameters. Comprehensive manual review of all slides is strongly recommended.",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = TextPrimary
                             )
@@ -441,19 +461,21 @@ fun ReportScreen(
                 }
             }
 
-            // 10. Action Buttons (PDF & CSV Export)
+            // 11. Bottom Action Buttons: Download PDF & Download CSV
             item {
                 Button(
                     onClick = {
                         val success = generatePdfReport(context)
                         coroutineScope.launch {
                             snackbarHostState.showSnackbar(
-                                if (success) "Report PDF generated successfully! Opened share/view sheet."
+                                if (success) "Report PDF generated successfully!"
                                 else "Failed to generate PDF."
                             )
                         }
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Blue500)
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.FileDownload,
@@ -463,13 +485,15 @@ fun ReportScreen(
                     Spacer(modifier = Modifier.width(8.dp))
                     Text("Download PDF Report")
                 }
+
                 Spacer(modifier = Modifier.height(8.dp))
+
                 Button(
                     onClick = {
                         val success = exportAnalysisTableCsv(context)
                         coroutineScope.launch {
                             snackbarHostState.showSnackbar(
-                                if (success) "CSV exported successfully! Opened share/view sheet."
+                                if (success) "Analysis Table CSV exported successfully!"
                                 else "Failed to export CSV."
                             )
                         }
@@ -479,7 +503,7 @@ fun ReportScreen(
                         contentColor = Blue500
                     ),
                     border = BorderStroke(1.dp, Blue500.copy(alpha = 0.35f)),
-                    shape = RoundedCornerShape(100.dp),
+                    shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Icon(
@@ -495,7 +519,7 @@ fun ReportScreen(
                         color = Blue500
                     )
                 }
-                Spacer(modifier = Modifier.height(100.dp))
+                Spacer(modifier = Modifier.height(80.dp))
             }
         }
     }

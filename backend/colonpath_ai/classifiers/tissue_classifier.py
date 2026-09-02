@@ -76,19 +76,31 @@ class TissueClassifier:
 
         with torch.no_grad():
             mc_logits, bin_logits, latent = self.model(v_tensor, m_tensor)
-            mc_probs = F.softmax(mc_logits, dim=-1).squeeze(0).cpu().numpy()
-            bin_probs = F.softmax(bin_logits, dim=-1).squeeze(0).cpu().numpy()
+            
+            # Apply temperature scaling to calibrate confidence (T=2.2)
+            temperature = 2.2
+            cal_mc_logits = mc_logits / temperature
+            cal_bin_logits = bin_logits / temperature
+            
+            mc_probs = F.softmax(cal_mc_logits, dim=-1).squeeze(0).cpu().numpy()
+            bin_probs = F.softmax(cal_bin_logits, dim=-1).squeeze(0).cpu().numpy()
             latent_vec = latent.squeeze(0).cpu().numpy()
 
         pred_idx = int(np.argmax(mc_probs))
         pred_class = TISSUE_CLASSES[pred_idx]
         confidence = float(mc_probs[pred_idx])
 
-        # Compute prediction entropy: H = - sum(p * log(p))
+        # Compute calibrated prediction entropy: H = - sum(p * log(p))
         eps = 1e-10
         entropy = float(-np.sum(mc_probs * np.log(mc_probs + eps)))
         max_entropy = np.log(NUM_CLASSES)
         normalized_entropy = float(entropy / max_entropy)
+
+        # Derived calibrated tumor likelihood from multiclass distribution
+        # TUM is index 8 in TISSUE_CLASSES
+        tum_idx = TISSUE_CLASSES.index("TUM") if "TUM" in TISSUE_CLASSES else 8
+        multiclass_tum_prob = float(mc_probs[tum_idx])
+        combined_tum_prob = float(0.6 * multiclass_tum_prob + 0.4 * bin_probs[1])
 
         return {
             "prediction": pred_class,
@@ -99,9 +111,9 @@ class TissueClassifier:
             "multiclass_probabilities": {
                 cls_name: float(p) for cls_name, p in zip(TISSUE_CLASSES, mc_probs)
             },
-            "tumor_probability": float(bin_probs[1]),
-            "non_tumor_probability": float(bin_probs[0]),
-            "binary_prediction": "TUM" if bin_probs[1] >= 0.5 else "NON-TUM",
+            "tumor_probability": combined_tum_prob,
+            "non_tumor_probability": float(1.0 - combined_tum_prob),
+            "binary_prediction": "TUM" if combined_tum_prob >= 0.5 else "NON-TUM",
             "latent_vector": latent_vec,
             "logits": mc_logits.squeeze(0).cpu().numpy(),
         }

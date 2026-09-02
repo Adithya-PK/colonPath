@@ -1,0 +1,9 @@
+Metric,Reference Baseline,Patient Specimen
+"Nuclei Count","1200","1824"
+"Nuclear Density","98.5 /mm²","139.2 /mm²"
+"Mean Nuclear Area","38.6 px²","47.3 px²"
+"Nuclear Circularity","0.86","0.72"
+"Gland Count","162","146"
+"Gland Density","12.8 /mm²","11.2 /mm²"
+"Mean Gland Area","3,420 px²","2,840 px²"
+"Gland Irregularity","0.31","0.64"
