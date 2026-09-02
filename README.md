@@ -14,14 +14,15 @@
 ## 📑 Table of Contents
 1. [Executive Summary & Core Philosophy](#1-executive-summary--core-philosophy)
 2. [Evidence Hierarchy & Scientific Provenance](#2-evidence-hierarchy--scientific-provenance)
-3. [Comprehensive Feature Inventory (Status Matrix)](#3-comprehensive-feature-inventory-status-matrix)
-4. [End-to-End Multimodal Pipeline & Mathematical Architecture](#4-end-to-end-multimodal-pipeline--mathematical-architecture)
-5. [Scientific Citations & Benchmark Datasets](#5-scientific-citations--benchmark-datasets)
-6. [Claims Classification & Intellectual Honesty Table](#6-claims-classification--intellectual-honesty-table)
-7. [Hackathon & Jury Defense Guide](#7-hackathon--jury-defense-guide)
-8. [Repository Architecture](#8-repository-architecture)
-9. [Quickstart, Setup & Android Deployment](#9-quickstart-setup--android-deployment)
-10. [REST API Contract Reference](#10-rest-api-contract-reference)
+3. [Technical Uniqueness & Comparison with 5 Existing Systems](#3-technical-uniqueness--comparison-with-5-existing-systems)
+4. [Comprehensive Feature Inventory (Status Matrix)](#4-comprehensive-feature-inventory-status-matrix)
+5. [End-to-End Multimodal Pipeline & Mathematical Architecture](#5-end-to-end-multimodal-pipeline--mathematical-architecture)
+6. [Scientific Citations & Benchmark Datasets](#6-scientific-citations--benchmark-datasets)
+7. [Claims Classification & Intellectual Honesty Table](#7-claims-classification--intellectual-honesty-table)
+8. [Hackathon & Jury Defense Guide](#8-hackathon--jury-defense-guide)
+9. [Repository Architecture](#9-repository-architecture)
+10. [Quickstart, Setup & Android Deployment](#10-quickstart-setup--android-deployment)
+11. [REST API Contract Reference](#11-rest-api-contract-reference)
 
 ---
 
@@ -60,10 +61,11 @@ To maintain absolute scientific rigor during project evaluation, technical claim
 
 ---
 
-## 3. Technical Novelty & Uniqueness Proof (Why This Is NOT a Web Clone)
+## 3. Technical Uniqueness & Comparison with 5 Existing Systems
 
-For detailed academic proof, see our companion research document:  
-📄 **[`TECHNICAL_NOVELTY_AND_EVIDENCE.md`](TECHNICAL_NOVELTY_AND_EVIDENCE.md)**
+For comprehensive academic proofs, comparative analyses, and citation logs, see our companion research documents:  
+- 📄 **[`EXISTING_SYSTEMS_COMPARATIVE_ANALYSIS.md`](EXISTING_SYSTEMS_COMPARATIVE_ANALYSIS.md)** (Deep analysis of 5 existing systems and our specific improvements)
+- 📄 **[`TECHNICAL_NOVELTY_AND_EVIDENCE.md`](TECHNICAL_NOVELTY_AND_EVIDENCE.md)** (Technical provenance and 3-tier architectural attribution)
 
 ### State-of-the-Art Comparative Analysis
 
