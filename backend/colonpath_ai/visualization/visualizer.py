@@ -70,11 +70,16 @@ class CaseVisualizer:
         if g_mask_file and g_mask_file.exists():
             g_mask = Image.open(g_mask_file).convert("L").resize(img_orig.size, Image.Resampling.NEAREST)
             g_mask_arr = np.array(g_mask)
-            overlay = np.array(img_orig).copy()
-            # Cyan / Blue-Green tint for segmented glandular epithelium
-            overlay[g_mask_arr > 127] = [0, 210, 180]
-            img_gland = Image.fromarray(cv2.addWeighted(np.array(img_orig), 0.65, overlay, 0.35, 0))
-            img_gland.save(str(gland_path))
+            orig_bgr = cv2.cvtColor(np.array(img_orig), cv2.COLOR_RGB2BGR)
+            overlay = orig_bgr.copy()
+            # Soft cyan tint for segmented gland interior
+            overlay[g_mask_arr > 127] = [210, 180, 0]
+            blended = cv2.addWeighted(orig_bgr, 0.65, overlay, 0.35, 0)
+            
+            # Draw distinct crisp yellow/orange boundary contours for each gland lumen
+            g_contours, _ = cv2.findContours(g_mask_arr, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            cv2.drawContours(blended, g_contours, -1, (0, 215, 255), 2)
+            cv2.imwrite(str(gland_path), blended)
         else:
             img_orig.save(str(gland_path))
         paths["glands"] = str(gland_path)

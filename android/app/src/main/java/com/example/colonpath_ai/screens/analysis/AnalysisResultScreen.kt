@@ -261,7 +261,6 @@ fun AnalysisResultScreen(
 
                 val visTabs = listOf(
                     "original" to "Original H&E",
-                    "combined" to "Combined View",
                     "nuclei" to "Nuclear View",
                     "glands" to "Gland View",
                     "regions" to "Priority Regions",

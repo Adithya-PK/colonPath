@@ -1,4 +1,4 @@
-﻿package com.example.colonpath_ai.screens.analysis
+package com.example.colonpath_ai.screens.analysis
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -63,9 +63,13 @@ fun MorphologyScreen(onBack: () -> Unit) {
         ) {
             // 1. Nuclear Morphology Section
             item {
-                SectionHeader(title = "Nuclear Morphology")
+                SectionHeader(title = "Nuclear Morphology Findings")
                 Spacer(modifier = Modifier.height(4.dp))
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        MetricCard("Nuclei Detected", "$nucCount", modifier = Modifier.weight(1f))
+                        MetricCard("Nuclear Density", "${String.format("%.1f", nucCount * 0.076)}", "/mm²", modifier = Modifier.weight(1f))
+                    }
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         MetricCard("Mean Area", "${String.format("%.1f", nucArea)}", "px²", modifier = Modifier.weight(1f))
                         MetricCard("Median Area", "${String.format("%.1f", nucArea * 0.93)}", "px²", modifier = Modifier.weight(1f))
@@ -76,35 +80,27 @@ fun MorphologyScreen(onBack: () -> Unit) {
                     }
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         MetricCard("Eccentricity", "${String.format("%.2f", nucEcc)}", modifier = Modifier.weight(1f))
-                        MetricCard("Aspect Ratio", "${String.format("%.2f", 1.0 + nucEcc * 0.8)}", modifier = Modifier.weight(1f))
-                    }
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         MetricCard("Pleomorphism Index", "${String.format("%.2f", 1.0 - nucCirc * 0.86)}", modifier = Modifier.weight(1f))
-                        Spacer(modifier = Modifier.weight(1f))
                     }
                 }
             }
 
             // 2. Gland Morphology Section
             item {
-                SectionHeader(title = "Gland Morphology")
+                SectionHeader(title = "Glandular Architecture Findings")
                 Spacer(modifier = Modifier.height(4.dp))
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        MetricCard("Gland Count", "$glandCount", modifier = Modifier.weight(1f))
+                        MetricCard("Gland Density", "${String.format("%.1f", glandCount * 0.076)}", "/mm²", modifier = Modifier.weight(1f))
+                    }
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         MetricCard("Mean Area", "${String.format("%.1f", glandArea)}", "px²", modifier = Modifier.weight(1f))
-                        MetricCard("Area Variance", "${String.format("%.1f", glandArea * 0.17)}", modifier = Modifier.weight(1f))
-                    }
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         MetricCard("Mean Perimeter", "${String.format("%.1f", glandPerim)}", "px", modifier = Modifier.weight(1f))
+                    }
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         MetricCard("Circularity", "${String.format("%.2f", glandCirc)}", modifier = Modifier.weight(1f))
-                    }
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         MetricCard("Irregularity Index", "${String.format("%.2f", 1.0 - glandCirc)}", modifier = Modifier.weight(1f))
-                        MetricCard("Crowding Score", "${String.format("%.2f", 0.57)}", modifier = Modifier.weight(1f))
-                    }
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        MetricCard("Branching Freq", "${String.format("%.2f", 0.23)}", modifier = Modifier.weight(1f))
-                        Spacer(modifier = Modifier.weight(1f))
                     }
                 }
             }
