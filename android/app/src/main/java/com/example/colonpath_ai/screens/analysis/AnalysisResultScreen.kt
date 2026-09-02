@@ -181,7 +181,9 @@ fun AnalysisResultScreen(
                     "glands" to "Glands",
                     "nuclei" to "Nuclei",
                     "regions" to "Regions",
-                    "uncertainty" to "Uncertainty"
+                    "uncertainty" to "Uncertainty",
+                    "top_regions" to "Top Regions",
+                    "pseudo_3d" to "Pseudo-3D"
                 )
 
                 Column(modifier = Modifier.fillMaxWidth()) {
@@ -284,6 +286,20 @@ fun AnalysisResultScreen(
                             Text("Consensus Level", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
                             Text(agr?.level ?: "HIGH", fontWeight = FontWeight.Bold, color = if (agr?.level == "LOW") RedError else Blue500)
                         }
+                        if (agr?.concordant_sources?.isNotEmpty() == true) {
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text("Concordant:", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = GreenSuccess)
+                            agr.concordant_sources.forEach {
+                                Text("• $it", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                            }
+                        }
+                        if (agr?.discordant_sources?.isNotEmpty() == true) {
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text("Discordant:", style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Bold, color = Amber500)
+                            agr.discordant_sources.forEach {
+                                Text("• $it", style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                            }
+                        }
                         if (!agr?.summary.isNullOrBlank()) {
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(agr?.summary ?: "", style = MaterialTheme.typography.bodySmall, color = TextPrimary)
@@ -292,9 +308,9 @@ fun AnalysisResultScreen(
                 }
             }
 
-            // 6. Nuclear & Gland Morphometry Evidence
+            // 6. Nuclear & Gland Morphometry Overview
             item {
-                SectionHeader("Morphometry Evidence")
+                SectionHeader("Morphometry Evidence Overview")
                 val nuc = caseResult?.nuclear_evidence
                 val gland = caseResult?.gland_evidence
 
@@ -309,7 +325,80 @@ fun AnalysisResultScreen(
                 }
             }
 
-            // 7. Reference Cohort Comparison
+            // 7. AI-Prioritized Focus Regions
+            if (caseResult?.priority_regions?.isNotEmpty() == true) {
+                item {
+                    SectionHeader("AI-Prioritized Focus Regions", subtitle = "2x2 spatial patch ranking based on tissue architecture & confidence")
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        caseResult.priority_regions.forEach { reg ->
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+                                border = BorderStroke(1.dp, CardBorder)
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text("${reg.region_id} (Rank #${reg.index})", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleSmall, color = TextPrimary)
+                                        Surface(shape = RoundedCornerShape(6.dp), color = Blue50) {
+                                            Text(
+                                                "Priority ${String.format("%.2f", reg.priority_score)}",
+                                                color = Blue500,
+                                                style = MaterialTheme.typography.labelSmall,
+                                                fontWeight = FontWeight.Bold,
+                                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                            )
+                                        }
+                                    }
+                                    Text(
+                                        "Coordinates: (x=${reg.x}, y=${reg.y}, ${reg.width}x${reg.height}px) • Nuclei: ${reg.nuclei_count} • Glands: ${reg.glands_count}",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = TextSecondary
+                                    )
+                                    if (reg.rationale.isNotBlank()) {
+                                        Text(reg.rationale, style = MaterialTheme.typography.labelSmall, color = TextTertiary)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 8. Why This Result? Evidence-Grounded Claims
+            item {
+                SectionHeader("Why This Result? (Evidence Grounding)", subtitle = "Cross-validated findings from deterministic CV measurements")
+                val expl = caseResult?.explanation
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+                    border = BorderStroke(1.dp, CardBorder)
+                ) {
+                    Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        if (!expl?.text.isNullOrBlank()) {
+                            Text(expl?.text ?: "", style = MaterialTheme.typography.bodySmall, color = TextPrimary)
+                            HorizontalDivider(color = CardBorder.copy(alpha = 0.5f))
+                        }
+                        if (expl?.claims?.isNotEmpty() == true) {
+                            Text("Validated Grounded Claims:", style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.Bold, color = TextPrimary)
+                            expl.claims.forEach { claim ->
+                                Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top) {
+                                    Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = GreenSuccess, modifier = Modifier.size(16.dp).padding(top = 2.dp))
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(claim.claim_statement, style = MaterialTheme.typography.bodySmall, color = TextSecondary)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 9. Reference Cohort Status
             item {
                 SectionHeader("Reference Cohort Match")
                 val ref = caseResult?.reference_comparison
@@ -319,18 +408,26 @@ fun AnalysisResultScreen(
                     colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
                     border = BorderStroke(1.dp, CardBorder)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Top Reference Match", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+                    Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        if (ref != null && ref.is_available) {
+                            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                Text("Top Reference Match", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+                                Text(
+                                    "${ref.top_category.uppercase()} (${String.format("%.1f", ref.top_similarity_percent)}%)",
+                                    fontWeight = FontWeight.Bold,
+                                    color = Blue500
+                                )
+                            }
+                            if (ref.insight.isNotBlank()) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(ref.insight, style = MaterialTheme.typography.bodySmall, color = TextPrimary)
+                            }
+                        } else {
                             Text(
-                                "${ref?.top_category?.uppercase() ?: "NORMAL"} (${String.format("%.1f", ref?.top_similarity_percent ?: 0.0)}%)",
-                                fontWeight = FontWeight.Bold,
-                                color = Blue500
+                                "Reference cohort comparison is unavailable for single-tile analysis in current release.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = TextSecondary
                             )
-                        }
-                        if (!ref?.insight.isNullOrBlank()) {
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(ref?.insight ?: "", style = MaterialTheme.typography.bodySmall, color = TextPrimary)
                         }
                     }
                 }

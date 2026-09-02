@@ -419,18 +419,82 @@ object ColonPathApiClient {
         }
 
         val explanation = json.optJSONObject("explanation")?.let {
+            val claimsList = mutableListOf<ExplanationClaimDto>()
+            it.optJSONArray("claims")?.let { cArr ->
+                for (j in 0 until cArr.length()) {
+                    val cObj = cArr.getJSONObject(j)
+                    claimsList.add(
+                        ExplanationClaimDto(
+                            claim_id = cObj.optString("claim_id", "C_${j+1}"),
+                            category = cObj.optString("category", ""),
+                            claim_statement = cObj.optString("claim_statement", ""),
+                            evidence_source = cObj.optString("evidence_source", ""),
+                            evidence_value = cObj.opt("evidence_value"),
+                            support_type = cObj.optString("support_type", "")
+                        )
+                    )
+                }
+            }
             ExplanationDto(
                 text = it.optString("text", ""),
+                claims = claimsList,
                 validated = it.optBoolean("validated", true),
                 validation_errors = parseStringList(it.optJSONArray("validation_errors"))
             )
+        }
+
+        val digepath = json.optJSONObject("digepath")?.let {
+            DigepathMetaDto(
+                model_name = it.optString("model_name", "Phikon-v2"),
+                architecture = it.optString("architecture", "ViT-L/16 via DINOv2"),
+                embedding_dimension = it.optInt("embedding_dimension", 1024),
+                device = it.optString("device", "cpu"),
+                status = it.optString("status", "active")
+            )
+        }
+
+        val modelPerf = json.optJSONObject("model_performance_metadata")?.let {
+            ModelPerformanceMetadataDto(
+                evaluation_dataset = it.optString("evaluation_dataset", "NCT-CRC-HE-100K (45 test patches)"),
+                multiclass_accuracy = it.optDouble("multiclass_accuracy", 0.6444),
+                multiclass_macro_f1 = it.optDouble("multiclass_macro_f1", 0.5041),
+                binary_tumor_accuracy = it.optDouble("binary_tumor_accuracy", 1.0),
+                expected_calibration_error_ece = it.optDouble("expected_calibration_error_ece", 0.1570),
+                verified_date = it.optString("verified_date", "2026-09-01")
+            )
+        }
+
+        val repro = json.optJSONObject("reproducibility")?.let {
+            val modelsMap = mutableMapOf<String, String>()
+            it.optJSONObject("models")?.let { mObj ->
+                for (k in mObj.keys()) {
+                    modelsMap[k] = mObj.optString(k)
+                }
+            }
+            ReproducibilityDto(
+                pipeline_version = it.optString("pipeline_version", "2.0.0"),
+                input_image_sha256 = it.optString("input_image_sha256", ""),
+                input_image_name = it.optString("input_image_name", ""),
+                models = modelsMap,
+                temperature_scaling_factor = it.optDouble("temperature_scaling_factor", 1.25),
+                timestamp_utc = it.optString("timestamp_utc")
+            )
+        }
+
+        val stageDurations = mutableMapOf<String, Double>()
+        json.optJSONObject("stage_durations_ms")?.let { sObj ->
+            for (k in sObj.keys()) {
+                stageDurations[k] = sObj.optDouble(k, 0.0)
+            }
         }
 
         return CaseResultDto(
             case_id = cid,
             timestamp = ts,
             status = status,
+            lifecycle_state = json.optString("lifecycle_state", "COMPLETED"),
             image_quality = quality,
+            digepath = digepath,
             prediction = pred,
             uncertainty = unc,
             model_agreement = agr,
@@ -438,6 +502,9 @@ object ColonPathApiClient {
             gland_evidence = gland,
             reference_comparison = ref,
             priority_regions = regions,
+            model_performance_metadata = modelPerf,
+            stage_durations_ms = stageDurations,
+            reproducibility = repro,
             visualizations = visMap,
             explanation = explanation,
             limitations = parseStringList(json.optJSONArray("limitations"))

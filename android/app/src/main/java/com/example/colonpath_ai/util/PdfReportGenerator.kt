@@ -1,4 +1,4 @@
-﻿package com.example.colonpath_ai.util
+package com.example.colonpath_ai.util
 
 import android.content.Context
 import android.graphics.*
@@ -131,8 +131,8 @@ object PdfReportGenerator {
             canvas.drawText("Gland Circularity: ${String.format("%.3f", gland?.mean_circularity ?: 0.0)}", leftMargin + 250f, y + 42f, paint)
             y += 58f
 
-            // 5. Reference Cohort Matching
-            canvas.drawText("3. Reference Cohort Vector Retrieval", leftMargin, y + 8f, sectionHeaderPaint)
+            // 5. Reference Cohort & Feature Vector
+            canvas.drawText("3. Feature Vector & Reference Status", leftMargin, y + 8f, sectionHeaderPaint)
             y += 14f
 
             val refBox = RectF(leftMargin, y, rightMargin, y + 42f)
@@ -140,11 +140,16 @@ object PdfReportGenerator {
             canvas.drawRoundRect(refBox, 6f, 6f, borderPaint)
 
             val ref = caseResult.reference_comparison
-            canvas.drawText("Top Cohort Match: ${ref?.top_category?.uppercase() ?: "NORMAL"}", leftMargin + 10f, y + 14f, paint)
-            canvas.drawText("Vector Similarity: ${String.format("%.1f", ref?.top_similarity_percent ?: 0.0)}%", leftMargin + 10f, y + 28f, paint)
-            canvas.drawText("Retrieval Engine: ${ref?.retrieval_engine ?: "Local Vector Search Engine"}", leftMargin + 250f, y + 14f, paint)
-            if (!ref?.insight.isNullOrBlank()) {
-                canvas.drawText("Insight: ${ref?.insight?.take(50)}...", leftMargin + 250f, y + 28f, paint)
+            if (ref != null && ref.is_available) {
+                canvas.drawText("Top Cohort Match: ${ref.top_category.uppercase()}", leftMargin + 10f, y + 14f, paint)
+                canvas.drawText("Vector Similarity: ${String.format("%.1f", ref.top_similarity_percent)}%", leftMargin + 10f, y + 28f, paint)
+                canvas.drawText("Retrieval Engine: ${ref.retrieval_engine}", leftMargin + 250f, y + 14f, paint)
+                if (ref.insight.isNotBlank()) {
+                    canvas.drawText("Insight: ${ref.insight.take(50)}...", leftMargin + 250f, y + 28f, paint)
+                }
+            } else {
+                canvas.drawText("Reference Comparison: Single-tile mode (archived cohort comparison unavailable)", leftMargin + 10f, y + 14f, paint)
+                canvas.drawText("Feature Vector: 16-D Morphology (U-Net/HoVer-Net) + 1024-D Phikon Foundation Features", leftMargin + 10f, y + 28f, paint)
             }
             y += 52f
 
