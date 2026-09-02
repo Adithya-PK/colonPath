@@ -9,11 +9,11 @@
   "nuclei_mean_perimeter_px": 49.669943160480926,
   "nuclei_mean_eccentricity": 0.7543964478399751,
   "nuclei_mean_circularity": 0.6879766380745798,
-  "glands_total": 11,
-  "glands_mean_area_px2": 2898.7272727272725,
-  "glands_mean_perimeter_px": 208.04709256779063,
-  "glands_mean_width_px": 49.90909090909091,
-  "glands_mean_height_px": 61.63636363636363,
-  "glands_mean_aspect_ratio": 1.5482223255857053,
-  "glands_mean_circularity": 0.5868057602638447
+  "glands_total": 7,
+  "glands_mean_area_px2": 3156.0,
+  "glands_mean_perimeter_px": 331.0351337875639,
+  "glands_mean_width_px": 63.714285714285715,
+  "glands_mean_height_px": 76.57142857142857,
+  "glands_mean_aspect_ratio": 1.3680542330268193,
+  "glands_mean_circularity": 0.48943740859779156
 }

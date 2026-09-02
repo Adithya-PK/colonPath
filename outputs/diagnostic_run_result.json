@@ -1,0 +1,288 @@
+{
+  "start_time": "2026-09-02T13:45:45.999180+00:00",
+  "completion_time": "2026-09-02T13:46:19.073140+00:00",
+  "elapsed_seconds": 33.0739379000006,
+  "status_code": 200,
+  "response": {
+    "case_id": "CASE_DIAGNOSTIC_04170",
+    "timestamp": "2026-09-02T13:46:19.059791+00:00",
+    "status": "completed",
+    "lifecycle_state": "COMPLETED",
+    "image_quality": {
+      "passed": true,
+      "resolution": "256x256",
+      "blur_laplacian_variance": 1595.05,
+      "blur_status": "ACCEPTABLE",
+      "mean_brightness": 184.05,
+      "brightness_status": "ACCEPTABLE",
+      "contrast_std": 38.48,
+      "contrast_status": "ACCEPTABLE",
+      "mean_saturation": 61.39
+    },
+    "digepath": {
+      "model_name": "Phikon-v2",
+      "architecture": "ViT-L/16 via DINOv2",
+      "embedding_dimension": 1024,
+      "device": "cpu",
+      "status": "active"
+    },
+    "prediction": {
+      "class": "LYM",
+      "confidence": 1.0,
+      "calibrated_confidence": 1.0,
+      "tumor_probability": 0.0,
+      "binary_class": "NON-TUM",
+      "multiclass_probabilities": {
+        "ADI": 0.0,
+        "BACK": 0.0,
+        "DEB": 0.0,
+        "LYM": 1.0,
+        "MUC": 0.0,
+        "MUS": 0.0,
+        "NORM": 0.0,
+        "STR": 0.0,
+        "TUM": 0.0
+      }
+    },
+    "uncertainty": {
+      "score": 0.0,
+      "level": "LOW",
+      "entropy": -0.0,
+      "normalized_entropy": -0.0,
+      "ood_score": 1.0,
+      "ood_status": "IN_DISTRIBUTION",
+      "is_ood": false,
+      "review_required": false,
+      "message": "AI-assisted classification ready for review."
+    },
+    "model_agreement": {
+      "level": "MEDIUM",
+      "score": 0.6667,
+      "concordant_sources": [
+        "Gland Morphology (Regular glands align with non-tumor prediction)",
+        "Visual Foundation Channel (LYM aligns with Fusion LYM)"
+      ],
+      "discordant_sources": [
+        "Nuclear Morphology (Pleomorphism conflicts with non-tumor prediction)"
+      ],
+      "summary": "Moderate agreement: Partial alignment on LYM, with minor morphological variance."
+    },
+    "nuclear_evidence": {
+      "total_count": 117,
+      "type_counts": {
+        "epithelial": 3,
+        "inflammatory": 0,
+        "spindle_shaped": 110,
+        "miscellaneous": 4
+      },
+      "mean_area_px2": 138.53,
+      "mean_perimeter_px": 49.67,
+      "mean_eccentricity": 0.754,
+      "mean_circularity": 0.688,
+      "interpretation": "Nuclear pleomorphism detected: 117 nuclei, high mean area (138.5 px\u00b2)."
+    },
+    "gland_evidence": {
+      "total_count": 7,
+      "mean_area_pixels": 3156.0,
+      "mean_perimeter_pixels": 331.04,
+      "mean_width_pixels": 63.71,
+      "mean_height_pixels": 76.57,
+      "mean_aspect_ratio": 1.368,
+      "mean_circularity": 0.489,
+      "interpretation": "Regular glandular architecture: 7 glands, circularity (0.49)."
+    },
+    "reference_comparison": null,
+    "priority_regions": [
+      {
+        "region_id": "R_03",
+        "index": 3,
+        "x": 0,
+        "y": 128,
+        "width": 128,
+        "height": 128,
+        "prediction": "DEB",
+        "confidence": 1.0,
+        "tumor_probability": 0.0,
+        "uncertainty_score": 0.0,
+        "uncertainty_level": "LOW",
+        "priority_score": 0.12299999999999998,
+        "priority_level": "LOW",
+        "priority_label": "AI-prioritized region",
+        "nuclei_count": 37,
+        "glands_count": 0,
+        "agreement_level": "HIGH",
+        "rationale": "Low AI priority with regular morphological patterns."
+      },
+      {
+        "region_id": "R_01",
+        "index": 1,
+        "x": 0,
+        "y": 0,
+        "width": 128,
+        "height": 128,
+        "prediction": "DEB",
+        "confidence": 1.0,
+        "tumor_probability": 0.0,
+        "uncertainty_score": 0.0,
+        "uncertainty_level": "LOW",
+        "priority_score": 0.09,
+        "priority_level": "LOW",
+        "priority_label": "AI-prioritized region",
+        "nuclei_count": 26,
+        "glands_count": 1,
+        "agreement_level": "HIGH",
+        "rationale": "Low AI priority with regular morphological patterns."
+      },
+      {
+        "region_id": "R_02",
+        "index": 2,
+        "x": 128,
+        "y": 0,
+        "width": 128,
+        "height": 128,
+        "prediction": "DEB",
+        "confidence": 1.0,
+        "tumor_probability": 0.0,
+        "uncertainty_score": 0.0,
+        "uncertainty_level": "LOW",
+        "priority_score": 0.09,
+        "priority_level": "LOW",
+        "priority_label": "AI-prioritized region",
+        "nuclei_count": 30,
+        "glands_count": 0,
+        "agreement_level": "HIGH",
+        "rationale": "Low AI priority with regular morphological patterns."
+      },
+      {
+        "region_id": "R_04",
+        "index": 4,
+        "x": 128,
+        "y": 128,
+        "width": 128,
+        "height": 128,
+        "prediction": "DEB",
+        "confidence": 1.0,
+        "tumor_probability": 0.0,
+        "uncertainty_score": 0.0,
+        "uncertainty_level": "LOW",
+        "priority_score": 0.084,
+        "priority_level": "LOW",
+        "priority_label": "AI-prioritized region",
+        "nuclei_count": 24,
+        "glands_count": 0,
+        "agreement_level": "HIGH",
+        "rationale": "Low AI priority with regular morphological patterns."
+      }
+    ],
+    "stage_durations_ms": {
+      "VALIDATING": 2.19,
+      "FEATURE_EXTRACTION": 2338.5,
+      "FUSION": 4.51,
+      "UNCERTAINTY": 1.33,
+      "AGREEMENT": 0.06,
+      "REGION_ANALYSIS": 68.74,
+      "GENERATING_VISUALIZATIONS": 469.12,
+      "TOTAL_PIPELINE_MS": 2884.57
+    },
+    "reproducibility": {
+      "pipeline_version": "2.0.0",
+      "input_image_sha256": "09b20a9c22476578b3399f11f7370681220618d630ec7af9dfa403916670200a",
+      "input_image_name": "CASE_DIAGNOSTIC_04170.png",
+      "models": {
+        "unet": "31.4M params (ResNet34 backbone, Warwick QU Dataset)",
+        "hovernet": "37.2M params (PanNuke/CoNIC checkpoint)",
+        "foundation": "303.35M params (DINOv2 ViT-L/16, owkin/phikon-v2, 1024D, Pretrained on 40M+ tiles)",
+        "fusion": "131.2K params (MultimodalFusionNet, 1024D+16D -> 128D)"
+      },
+      "temperature_scaling_factor": 1.25,
+      "timestamp_utc": "2026-09-02T13:46:19.059791+00:00"
+    },
+    "evidence_trace": {
+      "prediction_class": "LYM",
+      "confidence": 1.0,
+      "calibrated_confidence": 1.0,
+      "tumor_probability": 0.0,
+      "uncertainty_level": "LOW",
+      "normalized_entropy": -0.0,
+      "ood_status": "IN_DISTRIBUTION",
+      "consensus_level": "MEDIUM",
+      "nuclear_total_count": 117,
+      "nuclear_mean_area_px2": 138.53,
+      "gland_total_count": 7,
+      "gland_mean_circularity": 0.489
+    },
+    "model_performance_metadata": {
+      "fusion_model_architecture": "MultimodalFusionNet (1024D Visual + 16D Morphology)",
+      "foundation_model": "owkin/phikon-v2 (ViT-L/16 via DINOv2, 1024D native)",
+      "gland_segmentation_model": "PyTorch U-Net (ResNet34 backbone, Warwick QU GLaS)",
+      "nuclear_segmentation_model": "HoVer-Net (CoNSeP / PanNuke PyTorch)",
+      "dataset_validation_accuracy": 0.8835,
+      "dataset_balanced_accuracy": 0.8403,
+      "dataset_test_accuracy": 0.881,
+      "binary_tumor_roc_auc": 0.9909,
+      "temperature_scaling_factor": 1.25,
+      "uncertainty_estimation_method": "Shannon Entropy + Energy OOD + Temperature-scaled Confidence"
+    },
+    "visualizations": {
+      "original": "/cases/CASE_DIAGNOSTIC_04170/visualization/original",
+      "glands": "/cases/CASE_DIAGNOSTIC_04170/visualization/glands",
+      "nuclei": "/cases/CASE_DIAGNOSTIC_04170/visualization/nuclei",
+      "regions": "/cases/CASE_DIAGNOSTIC_04170/visualization/regions",
+      "uncertainty": "/cases/CASE_DIAGNOSTIC_04170/visualization/uncertainty",
+      "top_regions": "/cases/CASE_DIAGNOSTIC_04170/visualization/top_regions",
+      "pseudo_3d": "/cases/CASE_DIAGNOSTIC_04170/visualization/pseudo_3d"
+    },
+    "limitations": [
+      "Research prototype for decision support; not an autonomous diagnostic device.",
+      "Pathologist review recommended for all clinical correlations and staging.",
+      "Visual and morphological features are AI-derived computational estimates."
+    ],
+    "explanation": {
+      "text": "AI-assisted classification suggests **LYM** with 100.0% calibrated confidence (Binary Tumor Likelihood: 0.0%).\nNuclear Analysis: 117 nuclei detected (mean area: 138.5 px\u00b2, circularity: 0.688).\nGland Analysis: 7 glandular structures segmented (mean circularity: 0.489, aspect ratio: 1.37).\nModel Agreement: MEDIUM agreement across computational feature channels.\nAI-Prioritized Focus Region: R_03 (Priority Score: 0.12, Priority Level: LOW) at coordinates (x=0, y=128).",
+      "claims": [
+        {
+          "claim_id": "C_01",
+          "category": "classification",
+          "claim_statement": "AI multimodal prediction is LYM with 100.0% calibrated confidence.",
+          "evidence_source": "prediction.class",
+          "evidence_value": "LYM",
+          "support_type": "inferred_probability"
+        },
+        {
+          "claim_id": "C_02",
+          "category": "nuclear_morphometry",
+          "claim_statement": "Observed 117 nuclei with mean area 138.5 px\u00b2 and circularity 0.688.",
+          "evidence_source": "nuclear_evidence.total_count",
+          "evidence_value": 117,
+          "support_type": "measured_direct"
+        },
+        {
+          "claim_id": "C_03",
+          "category": "gland_morphometry",
+          "claim_statement": "Segmented 7 glandular structures with mean circularity 0.489.",
+          "evidence_source": "gland_evidence.total_count",
+          "evidence_value": 7,
+          "support_type": "measured_direct"
+        },
+        {
+          "claim_id": "C_04",
+          "category": "uncertainty",
+          "claim_statement": "Model uncertainty level is LOW (Normalized Entropy: -0.0000, OOD: IN_DISTRIBUTION).",
+          "evidence_source": "uncertainty.level",
+          "evidence_value": "LOW",
+          "support_type": "calibrated_metric"
+        },
+        {
+          "claim_id": "C_05",
+          "category": "model_agreement",
+          "claim_statement": "Multi-source consensus agreement is MEDIUM.",
+          "evidence_source": "model_agreement.level",
+          "evidence_value": "MEDIUM",
+          "support_type": "voting_consensus"
+        }
+      ],
+      "validated": true,
+      "validation_errors": []
+    }
+  }
+}

@@ -53,7 +53,6 @@ logger.setLevel(logging.INFO)
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 UNET_MODEL_PATH = CV_DIR / "outputs" / "unet" / "best_model.pth"
 HOVERNET_CHECKPOINT = CV_DIR / "hovernet_reference" / "checkpoints" / "hovernet_original_consep_type_tf2pytorch"
-PRECOMPUTED_HOVERNET_DIR = CV_DIR / "outputs" / "hovernet_all"
 
 
 def calculate_circularity(area: float, perimeter: float) -> float:
@@ -211,61 +210,17 @@ def run_hovernet_segmentation(
     output_overlay_path: Path
 ) -> Dict[str, Any]:
     """
-    Runs HoVer-Net nuclear instance segmentation and classification.
-    Checks precomputed pool for standard test samples or executes live inference.
+    Runs HoVer-Net nuclear instance segmentation and classification live on input image.
     """
-    img_name = image_path.stem
-    import re
-    # Check for direct file name match or embedded patch index (e.g. '00001' in 'CASE_VERIFY_001')
-    cand_stems = [img_name]
-    num_match = re.search(r"(\d{5})", img_name)
-    if num_match:
-        cand_stems.append(num_match.group(1))
-
-    # Match benchmark samples if arbitrary case_id was assigned during upload
-    if not any((PRECOMPUTED_HOVERNET_DIR / "json" / f"{s}.json").exists() for s in cand_stems):
-        try:
-            curr_size = image_path.stat().st_size
-            candidate_dirs = [
-                PROJECT_ROOT / "backend" / "colonpath_ai" / "outputs" / "hovernet_test" / "input",
-                PROJECT_ROOT / "source_material" / "sample_imgs",
-                CV_DIR / "outputs" / "hovernet_all" / "overlay",
-            ]
-            for cdir in candidate_dirs:
-                if cdir.exists():
-                    for ref_cand in sorted(cdir.glob("*.png")):
-                        if ref_cand.stat().st_size == curr_size:
-                            cand_stems.append(ref_cand.stem)
-                            break
-        except Exception:
-            pass
-
-    for stem in cand_stems:
-        cand_json = PRECOMPUTED_HOVERNET_DIR / "json" / f"{stem}.json"
-        if cand_json.exists():
-            with open(cand_json, "r", encoding="utf-8") as f:
-                nuc_data = json.load(f)
-            
-            output_json_path.parent.mkdir(parents=True, exist_ok=True)
-            with open(output_json_path, "w", encoding="utf-8") as f:
-                json.dump(nuc_data, f, indent=2)
-
-            cand_overlay = PRECOMPUTED_HOVERNET_DIR / "overlay" / f"{stem}.png"
-            if cand_overlay.exists():
-                import shutil
-                output_overlay_path.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copyfile(cand_overlay, output_overlay_path)
-            else:
-                render_nuclear_overlay(image_path, nuc_data, output_overlay_path)
-                
-            return nuc_data
-
-    # Otherwise perform live inference if checkpoint exists
     if not HOVERNET_CHECKPOINT.exists():
         raise FileNotFoundError(f"HoVer-Net checkpoint not found at: {HOVERNET_CHECKPOINT}")
 
-    # Fallback to local inference execution via hovernet InferManager
+    # Local inference execution via hovernet InferManager
     try:
+        import sys
+        hover_dir_str = str(CV_DIR / "hovernet_reference")
+        if hover_dir_str not in sys.path:
+            sys.path.insert(0, hover_dir_str)
         from hovernet_reference.infer.tile import InferManager
         import tempfile
         import shutil
@@ -283,8 +238,8 @@ def run_hovernet_segmentation(
         }
         run_args = {
             "batch_size": 1,
-            "nr_inference_workers": 1,
-            "nr_post_proc_workers": 1,
+            "nr_inference_workers": 0,
+            "nr_post_proc_workers": 0,
             "patch_input_shape": 270,
             "patch_output_shape": 80,
             "input_dir": str(temp_in),

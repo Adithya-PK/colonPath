@@ -16,6 +16,11 @@ import com.example.colonpath_ai.components.*
 import com.example.colonpath_ai.data.SampleDataRepository
 import com.example.colonpath_ai.ui.theme.*
 
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.material.icons.outlined.Delete
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -25,6 +30,7 @@ fun HistoryScreen(onCaseClick: (String) -> Unit) {
     var selectedFilter by remember { mutableStateOf("All") }
     var caseToDelete by remember { mutableStateOf<com.example.colonpath_ai.model.Case?>(null) }
     val filters = listOf("All", "Completed", "Pending Review", "In Progress", "Failed")
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     if (caseToDelete != null) {
         AlertDialog(
@@ -50,7 +56,11 @@ fun HistoryScreen(onCaseClick: (String) -> Unit) {
         )
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .imePadding()
+    ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text("Case History", style = MaterialTheme.typography.displaySmall)
             Text("Previous analyses and cases", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
@@ -62,6 +72,15 @@ fun HistoryScreen(onCaseClick: (String) -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("Search cases or patients...") },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search") },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { searchQuery = "" }) {
+                            Icon(Icons.Default.Close, contentDescription = "Clear search")
+                        }
+                    }
+                },
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                keyboardActions = KeyboardActions(onSearch = { keyboardController?.hide() }),
                 singleLine = true
             )
             
@@ -99,19 +118,19 @@ fun HistoryScreen(onCaseClick: (String) -> Unit) {
             )
         } else {
             LazyColumn(
-                contentPadding = PaddingValues(16.dp),
+                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(filteredCases, key = { it.caseId }) { case ->
                     CaseCard(
                         case = case,
-                        onClick = { onCaseClick(case.caseId) },
+                        onClick = { 
+                            keyboardController?.hide()
+                            onCaseClick(case.caseId) 
+                        },
                         onDelete = { caseToDelete = case }
                     )
-                }
-                item {
-                    Spacer(modifier = Modifier.height(100.dp))
                 }
             }
         }

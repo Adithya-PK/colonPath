@@ -1,0 +1,10 @@
+{
+  "passed": true,
+  "laplacian_variance": 2132.64,
+  "blur_status": "ACCEPTABLE",
+  "mean_brightness": 191.34,
+  "brightness_status": "ACCEPTABLE",
+  "contrast_std": 44.48,
+  "contrast_status": "ACCEPTABLE",
+  "mean_saturation": 83.97
+}

@@ -1,0 +1,19 @@
+{
+  "case_id": "CASE_VERIFY_DISTINCT_002",
+  "nuclei_total": 95,
+  "nuclei_type_1": 4,
+  "nuclei_type_2": 0,
+  "nuclei_type_3": 83,
+  "nuclei_type_4": 8,
+  "nuclei_mean_area_px2": 138.2157894736842,
+  "nuclei_mean_perimeter_px": 49.51717351235841,
+  "nuclei_mean_eccentricity": 0.7377483553965755,
+  "nuclei_mean_circularity": 0.6896451788092522,
+  "glands_total": 13,
+  "glands_mean_area_px2": 1851.8461538461538,
+  "glands_mean_perimeter_px": 197.23969195439264,
+  "glands_mean_width_px": 48.76923076923077,
+  "glands_mean_height_px": 52.30769230769231,
+  "glands_mean_aspect_ratio": 1.502402815292147,
+  "glands_mean_circularity": 0.5410090447714258
+}

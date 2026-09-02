@@ -22,7 +22,7 @@ class AgreementResult(BaseModel):
 
 class AgreementEngine:
     """
-    Evaluates multi-source evidence agreement across vision, morphology, and reference comparisons.
+    Evaluates multi-source evidence agreement across vision, nuclear morphology, and gland morphology.
     """
 
     @classmethod
@@ -31,8 +31,8 @@ class AgreementEngine:
         fusion_prediction: str,
         tumor_probability: float,
         morphology: MorphologyFeatureVector,
+        visual_prediction: Optional[str] = None,
         reference_top_class: Optional[str] = None,
-        digepath_prediction: Optional[str] = None,
     ) -> AgreementResult:
         concordant = []
         discordant = []
@@ -83,23 +83,16 @@ class AgreementEngine:
             else:
                 discordant.append("Gland Morphology (Regular glands conflict with tumor prediction)")
 
-        # 3. Check Digepath Visual Classifier if available
-        if digepath_prediction:
-            is_digepath_tum = (digepath_prediction == "TUM")
-            if is_digepath_tum == is_pred_tum:
-                concordant.append(f"Digepath Visual Classifier ({digepath_prediction} aligns with Fusion {fusion_prediction})")
+        # 3. Check Visual Feature Channel if available
+        v_pred = visual_prediction
+        if v_pred:
+            is_visual_tum = (v_pred == "TUM")
+            if is_visual_tum == is_pred_tum:
+                concordant.append(f"Visual Foundation Channel ({v_pred} aligns with Fusion {fusion_prediction})")
             else:
-                discordant.append(f"Digepath Visual Classifier ({digepath_prediction} differs from Fusion {fusion_prediction})")
+                discordant.append(f"Visual Foundation Channel ({v_pred} differs from Fusion {fusion_prediction})")
 
-        # 4. Check Reference Case Match if available
-        if reference_top_class:
-            ref_is_tum = (reference_top_class in ["adenocarcinoma", "adenoma", "TUM"])
-            if ref_is_tum == is_pred_tum:
-                concordant.append(f"Reference Comparison (Top match '{reference_top_class}' supports prediction)")
-            else:
-                discordant.append(f"Reference Comparison (Top match '{reference_top_class}' diverges from prediction)")
-
-        # 5. Compute Agreement Level & Score
+        # 4. Compute Agreement Level & Score
         total_checks = len(concordant) + len(discordant)
         score = float(len(concordant) / total_checks) if total_checks > 0 else 0.5
 
@@ -110,20 +103,18 @@ class AgreementEngine:
         elif score >= 0.50:
             level = "MEDIUM"
             review_rec = True
-            summary = f"Moderate agreement: Partial alignment on {fusion_prediction}, with minor morphological or reference variance."
+            summary = f"Moderate agreement: Partial alignment on {fusion_prediction}, with minor morphological variance."
         else:
             level = "LOW"
             review_rec = True
             summary = f"Low agreement / Evidence Conflict: Discrepancy detected between visual classification ({fusion_prediction}) and morphological measurements."
 
-        overall_morph = f"{n_interp} {g_interp}".strip()
-
         return AgreementResult(
             level=level,
-            score=score,
+            score=round(score, 4),
             concordant_sources=concordant,
             discordant_sources=discordant,
-            morphology_interpretation=overall_morph,
+            morphology_interpretation=f"{n_interp} {g_interp}",
             gland_interpretation=g_interp,
             nuclear_interpretation=n_interp,
             review_recommended=review_rec,

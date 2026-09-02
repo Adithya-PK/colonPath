@@ -1,0 +1,26 @@
+{
+  "case_id": "COL-2026-014",
+  "timestamp": "2026-09-01T19:15:35.082799+00:00",
+  "prediction_class": "MUS",
+  "prediction_confidence": 1.0,
+  "calibrated_confidence": 1.0,
+  "tumor_probability": 1.0,
+  "uncertainty_score": 0.3,
+  "uncertainty_level": "HIGH",
+  "ood_score": 1.0,
+  "ood_status": "OOD_DETECTED",
+  "agreement_level": "MEDIUM",
+  "nuclear_total_count": 345,
+  "nuclear_mean_area_px2": 789.46,
+  "gland_total_count": 4,
+  "gland_mean_circularity": 0.441,
+  "reference_top_category": "adenocarcinoma",
+  "reference_top_similarity_percent": 57.43,
+  "priority_regions_count": 4,
+  "region_ids": [
+    "R_02",
+    "R_01",
+    "R_03",
+    "R_04"
+  ]
+}

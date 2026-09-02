@@ -1,0 +1,26 @@
+{
+  "case_id": "CASE_VERIFY_DISTINCT_004",
+  "timestamp": "2026-09-01T16:11:15.330362+00:00",
+  "prediction_class": "NORM",
+  "prediction_confidence": 0.995,
+  "calibrated_confidence": 0.9835,
+  "tumor_probability": 0.0,
+  "uncertainty_score": 0.0364,
+  "uncertainty_level": "LOW",
+  "ood_score": 1.0,
+  "ood_status": "IN_DISTRIBUTION",
+  "agreement_level": "MEDIUM",
+  "nuclear_total_count": 72,
+  "nuclear_mean_area_px2": 138.88,
+  "gland_total_count": 6,
+  "gland_mean_circularity": 0.631,
+  "reference_top_category": "normal",
+  "reference_top_similarity_percent": 71.99,
+  "priority_regions_count": 4,
+  "region_ids": [
+    "R_03",
+    "R_02",
+    "R_01",
+    "R_04"
+  ]
+}

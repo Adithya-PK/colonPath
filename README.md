@@ -1,19 +1,19 @@
-﻿# COLONPATH-AI V2: Multimodal Clinical Decision Support System
+# COLONPATH-AI V3: Multimodal Clinical Decision Support System
 
-[![Python 3.11](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![Python 3.13](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![PyTorch 2.5](https://img.shields.io/badge/PyTorch-2.5-EE4C2C?logo=pytorch&logoColor=white)](https://pytorch.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Android Jetpack Compose](https://img.shields.io/badge/Android-Jetpack%20Compose-3DDC84?logo=android&logoColor=white)](https://developer.android.com/jetpack/compose)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**COLONPATH-AI V2** is an end-to-end multimodal AI-assisted decision-support ecosystem designed for colorectal histopathology. The system combines deep gastrointestinal foundation vision models (Digepath ViT-L/16) with cellular/glandular morphological phenotyping (U-Net + HoVer-Net), post-hoc confidence calibration, Shannon entropy uncertainty estimation, AI-prioritized spatial region triage, and strict anti-hallucination guardrails, seamlessly delivered to pathologists via a modern Android application and interactive web dashboard.
+**COLONPATH-AI V3** is an end-to-end multimodal AI-assisted decision-support ecosystem designed for colorectal histopathology. The system combines deep gastrointestinal foundation vision models (Phikon-v2 DINOv2 ViT-L/16) with cellular/glandular morphological phenotyping (U-Net + HoVer-Net), post-hoc confidence calibration, Shannon entropy uncertainty estimation, AI-prioritized spatial region triage, and strict anti-hallucination guardrails, seamlessly delivered to pathologists via a modern Android application and interactive web dashboard.
 
 ---
 
 ## 🧭 Repository Structure
 
 ```
-ColonPathAIV2/
+ColonPathAIV3/
 ├── 📱 android/              # Native Android Application (Kotlin, Jetpack Compose, Material 3)
 │   ├── app/src/main/        # 10 UI Screens, Custom Pathology Theme, PDF Report Generator
 │   ├── build.gradle.kts     # Build configuration and dependencies
@@ -21,13 +21,12 @@ ColonPathAIV2/
 │
 ├── 🧠 backend/              # FastAPI REST Backend & Intelligence Pipelines (colonpath_ai)
 │   ├── api/                 # REST Routes (/health, /analyze, /cases, /regions, /review, /copilot)
-│   ├── foundation/          # Digepath ViT-L/16 GI Foundation Model extractor & cache
+│   ├── foundation/          # Phikon-v2 ViT-L/16 GI Foundation Model extractor & cache
 │   ├── fusion/              # Multimodal Late-Fusion Network (1024-d visual + 16-d morphology)
 │   ├── classifiers/         # 9-class tissue classifier (NCT-CRC-HE-100K) & binary tumor head
 │   ├── uncertainty/         # Post-hoc temperature scaling & Shannon entropy engine
 │   ├── agreement/           # Multi-source cross-evidence consensus engine
 │   ├── regions/             # AI-prioritized 2x2 spatial patch ranking & navigation
-│   ├── reference/           # Curated cohort similarity matching engine
 │   ├── agent/               # Evidence validator & anti-hallucination gatekeeper
 │   ├── visualization/       # 7 authentic histopathology layer overlay renderers
 │   ├── storage/             # SQLite database manager & case repository

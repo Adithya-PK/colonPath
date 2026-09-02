@@ -14,12 +14,12 @@
     "mean_circularity": 0.6879766380745798
   },
   "glands": {
-    "total": 9,
-    "mean_area_pixels": 2354.4444444444443,
-    "mean_perimeter_pixels": 198.52466563383737,
-    "mean_width_pixels": 46.22222222222222,
-    "mean_height_pixels": 60.22222222222222,
-    "mean_aspect_ratio": 1.5082036037018856,
-    "mean_circularity": 0.6172091756438995
+    "total": 7,
+    "mean_area_pixels": 3156.0,
+    "mean_perimeter_pixels": 331.0351337875639,
+    "mean_width_pixels": 63.714285714285715,
+    "mean_height_pixels": 76.57142857142857,
+    "mean_aspect_ratio": 1.3680542330268193,
+    "mean_circularity": 0.48943740859779156
   }
 }

@@ -1,0 +1,26 @@
+{
+  "case_id": "CASE_STEP4_INSPECT",
+  "timestamp": "2026-09-02T05:07:09.525005+00:00",
+  "prediction_class": "LYM",
+  "prediction_confidence": 1.0,
+  "calibrated_confidence": 1.0,
+  "tumor_probability": 0.0,
+  "uncertainty_score": 0.0,
+  "uncertainty_level": "LOW",
+  "ood_score": 1.0,
+  "ood_status": "IN_DISTRIBUTION",
+  "agreement_level": "LOW",
+  "nuclear_total_count": 65,
+  "nuclear_mean_area_px2": 140.88,
+  "gland_total_count": 6,
+  "gland_mean_circularity": 0.58,
+  "reference_top_category": "adenocarcinoma",
+  "reference_top_similarity_percent": 72.01,
+  "priority_regions_count": 4,
+  "region_ids": [
+    "R_04",
+    "R_02",
+    "R_01",
+    "R_03"
+  ]
+}

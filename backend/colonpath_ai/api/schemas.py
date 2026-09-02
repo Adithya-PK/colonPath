@@ -89,6 +89,7 @@ class CaseResultResponse(BaseModel):
     case_id: str
     timestamp: str
     status: str
+    lifecycle_state: Optional[str] = "COMPLETED"
     image_quality: Dict[str, Any]
     digepath: Dict[str, Any]
     prediction: Dict[str, Any]
@@ -96,8 +97,12 @@ class CaseResultResponse(BaseModel):
     model_agreement: Dict[str, Any]
     nuclear_evidence: Dict[str, Any]
     gland_evidence: Dict[str, Any]
-    reference_comparison: Dict[str, Any]
+    reference_comparison: Optional[Dict[str, Any]] = None
     priority_regions: List[RegionDetailSchema]
+    stage_durations_ms: Dict[str, float] = Field(default_factory=dict)
+    reproducibility: Optional[Dict[str, Any]] = None
+    evidence_trace: Optional[Dict[str, Any]] = None
+    model_performance_metadata: Optional[Dict[str, Any]] = None
     visualizations: Dict[str, str] = Field(default_factory=dict)
     limitations: List[str] = Field(default_factory=list)
     explanation: Optional[Dict[str, Any]] = None
@@ -127,3 +132,12 @@ class CaseSummaryItem(BaseModel):
     confidence: Optional[float] = None
     uncertainty_level: Optional[str] = None
     review_status: str
+
+
+class ApiErrorResponse(BaseModel):
+    error_code: str
+    message: str
+    case_id: Optional[str] = None
+    stage: Optional[str] = None
+    retryable: bool = False
+

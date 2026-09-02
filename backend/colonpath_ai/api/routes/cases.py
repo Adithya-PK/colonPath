@@ -1,16 +1,24 @@
-"""
-Case Retrieval and Image Serving API Routes.
-"""
-
+import re
 from pathlib import Path
 from typing import List, Optional, Dict, Any
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter, status
 from fastapi.responses import FileResponse
 from api.schemas import CaseResultResponse, CaseSummaryItem
 from api.services.case_service import CaseService
+from api.exceptions import ValidationError, CaseNotFoundError
+from system_config import config
 
 router = APIRouter(prefix="/cases", tags=["Cases"])
 case_service = CaseService()
+
+
+def validate_case_id(case_id: str) -> str:
+    cleaned = case_id.strip()
+    if not re.match(r"^[a-zA-Z0-9_\-\.]+$", cleaned) or ".." in cleaned:
+        raise ValidationError(
+            message=f"Invalid Case ID '{case_id}'. Path traversal and special characters are forbidden."
+        )
+    return cleaned
 
 
 @router.get("", response_model=List[CaseSummaryItem])
@@ -21,51 +29,59 @@ def list_cases(limit: int = 50):
 
 @router.get("/{case_id}", response_model=Dict[str, Any])
 def get_case_meta(case_id: str):
-    meta = case_service.get_case_meta(case_id)
+    cid = validate_case_id(case_id)
+    meta = case_service.get_case_meta(cid)
     if not meta:
-        raise HTTPException(status_code=404, detail=f"Case '{case_id}' not found.")
+        raise CaseNotFoundError(case_id=cid)
     return meta
 
 
 @router.get("/{case_id}/result", response_model=CaseResultResponse)
 def get_case_result(case_id: str):
-    result = case_service.get_case_result(case_id)
+    cid = validate_case_id(case_id)
+    result = case_service.get_case_result(cid)
     if not result:
-        raise HTTPException(status_code=404, detail=f"Result for case '{case_id}' not found.")
+        raise CaseNotFoundError(case_id=cid)
     return result
 
 
 @router.get("/{case_id}/image")
 def get_case_image(case_id: str):
-    meta = case_service.get_case_meta(case_id)
+    cid = validate_case_id(case_id)
+    meta = case_service.get_case_meta(cid)
     if not meta or not meta.get("image_path"):
-        raise HTTPException(status_code=404, detail=f"Image for case '{case_id}' not found.")
+        raise CaseNotFoundError(case_id=cid)
     img_path = Path(meta["image_path"])
     if not img_path.exists():
-        raise HTTPException(status_code=404, detail="Image file does not exist on disk.")
+        raise CaseNotFoundError(case_id=cid)
     return FileResponse(img_path)
 
 
 @router.get("/{case_id}/visualization/{vis_type}")
 def get_case_visualization(case_id: str, vis_type: str):
-    result = case_service.get_case_result(case_id)
-    if not result:
-        raise HTTPException(status_code=404, detail=f"Case '{case_id}' not found.")
+    cid = validate_case_id(case_id)
+    vtype = vis_type.lower().strip()
+    if vtype not in config.allowed_visualizations:
+        raise ValidationError(
+            message=f"Invalid visualization type '{vis_type}'. Allowed types: {config.allowed_visualizations}"
+        )
 
-    PROJECT_ROOT = Path(__file__).resolve().parents[2]
+    result = case_service.get_case_result(cid)
+    if not result:
+        raise CaseNotFoundError(case_id=cid)
+
     candidates = [
-        PROJECT_ROOT / "outputs" / "cases" / case_id / "visualizations" / f"{vis_type}.png",
-        PROJECT_ROOT / "outputs" / "visualizations" / case_id / f"{vis_type}.png",
-        PROJECT_ROOT / "outputs" / "cases" / case_id / "cv" / "unet" / "gland_mask.png" if vis_type == "glands" else None,
-        PROJECT_ROOT / "outputs" / "cases" / case_id / "cv" / "hovernet" / "nuclei_overlay.png" if vis_type == "nuclei" else None,
+        config.cases_dir / cid / "visualizations" / f"{vtype}.png",
+        config.output_dir / "visualizations" / cid / f"{vtype}.png",
+        config.cases_dir / cid / "cv" / "unet" / "gland_mask.png" if vtype == "glands" else None,
+        config.cases_dir / cid / "cv" / "hovernet" / "nuclei_overlay.png" if vtype == "nuclei" else None,
     ]
 
     for cand in candidates:
         if cand and cand.exists():
             return FileResponse(str(cand), media_type="image/png")
 
-    valid_types = ["original", "glands", "nuclei", "regions", "uncertainty", "top_regions", "pseudo_3d"]
-    raise HTTPException(status_code=404, detail=f"Visualization '{vis_type}' for case '{case_id}' not found on disk. Available: {valid_types}")
+    raise CaseNotFoundError(case_id=f"{cid} (vis: {vtype})")
 
 
 @router.get("/{case_id}/evidence", response_model=Dict[str, Any])
@@ -73,47 +89,41 @@ def get_case_evidence(case_id: str):
     """
     Returns the deterministic computational evidence payload (evidence.json) for a case.
     """
-    result = case_service.get_case_result(case_id)
+    cid = validate_case_id(case_id)
+    result = case_service.get_case_result(cid)
     if not result:
-        raise HTTPException(status_code=404, detail=f"Case '{case_id}' not found.")
+        raise CaseNotFoundError(case_id=cid)
 
     evidence = {
         "case_id": result.get("case_id"),
-        "timestamp": result.get("timestamp"),
-        "prediction_class": result.get("prediction", {}).get("class"),
-        "prediction_confidence": result.get("prediction", {}).get("confidence"),
-        "calibrated_confidence": result.get("prediction", {}).get("calibrated_confidence"),
-        "tumor_probability": result.get("prediction", {}).get("tumor_probability"),
-        "uncertainty_score": result.get("uncertainty", {}).get("score"),
-        "uncertainty_level": result.get("uncertainty", {}).get("level"),
-        "ood_score": result.get("uncertainty", {}).get("ood_score", 0.0),
-        "ood_status": result.get("uncertainty", {}).get("ood_status", "IN_DISTRIBUTION"),
-        "agreement_level": result.get("model_agreement", {}).get("level"),
-        "nuclear_total_count": result.get("nuclear_evidence", {}).get("total_count"),
-        "nuclear_mean_area_px2": result.get("nuclear_evidence", {}).get("mean_area_px2"),
-        "gland_total_count": result.get("gland_evidence", {}).get("total_count"),
-        "gland_mean_circularity": result.get("gland_evidence", {}).get("mean_circularity"),
-        "reference_top_category": result.get("reference_comparison", {}).get("top_category"),
-        "reference_top_similarity_percent": result.get("reference_comparison", {}).get("top_similarity_percent"),
-        "priority_regions_count": len(result.get("priority_regions", [])),
+        "prediction": result.get("prediction"),
+        "uncertainty": result.get("uncertainty"),
+        "model_agreement": result.get("model_agreement"),
+        "nuclear_evidence": result.get("nuclear_evidence"),
+        "gland_evidence": result.get("gland_evidence"),
+        "priority_regions": result.get("priority_regions"),
+        "explanation": result.get("explanation"),
+        "model_performance_metadata": result.get("model_performance_metadata"),
+        "reproducibility": result.get("reproducibility"),
     }
     return evidence
 
 
-@router.get("/{case_id}/report", response_model=Dict[str, Any])
-def get_case_report(case_id: str):
-    """
-    Returns the structured MedGemma medical explanation report for a case.
-    """
-    result = case_service.get_case_result(case_id)
+@router.post("/{case_id}/review", status_code=status.HTTP_200_OK)
+def review_case(case_id: str, review_data: Dict[str, Any]):
+    cid = validate_case_id(case_id)
+    result = case_service.get_case_result(cid)
     if not result:
-        raise HTTPException(status_code=404, detail=f"Case '{case_id}' not found.")
+        raise CaseNotFoundError(case_id=cid)
 
-    explanation = result.get("explanation", {})
+    action = review_data.get("action", "MARK_REVIEWED")
+    notes = review_data.get("notes", "")
+    pathologist_id = review_data.get("pathologist_id", "Dr. Pathologist")
+
+    case_service.add_review(cid, action=action, notes=notes, pathologist_id=pathologist_id)
     return {
-        "case_id": case_id,
-        "explanation": explanation,
-        "limitations": result.get("limitations", []),
-        "status": result.get("status", "completed"),
+        "status": "SUCCESS",
+        "case_id": cid,
+        "review_action": action,
+        "message": f"Review record logged for case '{cid}'."
     }
-

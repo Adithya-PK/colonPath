@@ -41,7 +41,6 @@ def test_end_to_end_pipeline():
         "model_agreement",
         "nuclear_evidence",
         "gland_evidence",
-        "reference_comparison",
         "priority_regions",
         "visualizations",
         "limitations",

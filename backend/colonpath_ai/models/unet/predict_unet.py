@@ -159,7 +159,7 @@ def load_model():
     model.to(DEVICE)
     model.eval()
 
-    print("✓ Model loaded successfully")
+    print("[OK] Model loaded successfully")
 
     return model
 
@@ -366,52 +366,29 @@ def main():
         image_tensor
     )
 
-    print("✓ Prediction complete")
-
-    # --------------------------------------------------------
-    # Evaluation
-    # --------------------------------------------------------
-
-    dice = dice_score(
-        prediction,
-        ground_truth
-    )
-
-    iou = iou_score(
-        prediction,
-        ground_truth
-    )
-
-    print()
+    print("[OK] Prediction complete")
     print("=" * 60)
-    print("EVALUATION")
+    print("U-Net Prediction Pipeline for Gland Segmentation")
     print("=" * 60)
 
-    print(f"Dice Score : {dice:.4f}")
-    print(f"IoU Score   : {iou:.4f}")
+    # Automatically find an image from the GLAS test dataset
+    test_image_dir = PROJECT_DIR / "datasets" / "glas" / "test"
+    image_paths = sorted(list(test_image_dir.glob("*.bmp")) + list(test_image_dir.glob("*.png")))
 
-    # --------------------------------------------------------
-    # Save results
-    # --------------------------------------------------------
+    if not image_paths:
+        # Fallback to general search if test subfolder is not present
+        test_image_dir = PROJECT_DIR / "datasets" / "glas"
+        image_paths = sorted(list(test_image_dir.glob("*.bmp")) + list(test_image_dir.glob("*.png")))
 
-    prediction_path, visualization_path = save_results(
-        original_image,
-        ground_truth,
-        probability,
-        prediction,
-        image_path.stem
-    )
+    if not image_paths:
+        print("No test images found in GLAS dataset folder.")
+        return
 
-    print()
-    print("=" * 60)
-    print("RESULTS SAVED")
-    print("=" * 60)
+    test_image_path = image_paths[0]
+    print(f"Running inference on: {test_image_path.name}")
 
-    print(f"Prediction   : {prediction_path}")
-    print(f"Visualization: {visualization_path}")
-
-    print()
-    print("✓ U-Net prediction pipeline completed successfully.")
+    results = run_unet_pipeline(test_image_path)
+    print("[OK] U-Net prediction pipeline completed successfully.")
 
 
 if __name__ == "__main__":

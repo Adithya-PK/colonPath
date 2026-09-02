@@ -20,12 +20,11 @@ def test_agreement_high():
         fusion_prediction="TUM",
         tumor_probability=0.92,
         morphology=morph,
-        reference_top_class="adenocarcinoma",
-        digepath_prediction="TUM",
+        visual_prediction="TUM",
     )
     assert res.level == "HIGH"
     assert len(res.discordant_sources) == 0
-    assert len(res.concordant_sources) >= 3
+    assert len(res.concordant_sources) >= 2
 
 
 def test_agreement_discordant():
@@ -42,8 +41,7 @@ def test_agreement_discordant():
         fusion_prediction="TUM",
         tumor_probability=0.85,
         morphology=morph,
-        reference_top_class="normal",
-        digepath_prediction="TUM",
+        visual_prediction="TUM",
     )
     assert res.level in ["MEDIUM", "LOW"]
     assert len(res.discordant_sources) > 0

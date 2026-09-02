@@ -4,11 +4,16 @@ import android.content.Context
 import android.content.Intent
 import androidx.core.content.FileProvider
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import com.example.colonpath_ai.R
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Warning
@@ -106,7 +111,11 @@ fun ReportScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     
-    val effectiveCaseId = caseId ?: SampleDataRepository.activeCaseId ?: "COL-2026-001"
+    val effectiveCaseId = caseId?.takeIf { it.isNotBlank() }
+        ?: com.example.colonpath_ai.data.ColonPathRepository.activeCaseId
+        ?: SampleDataRepository.activeCaseId
+        ?: com.example.colonpath_ai.data.ColonPathRepository.currentCaseResult?.case_id
+        ?: "COL-2026-001"
     val analysisResult = SampleDataRepository.getAnalysisForCase(effectiveCaseId)
 
     fun shareFile(context: Context, file: File, mimeType: String) {
@@ -134,7 +143,7 @@ fun ReportScreen(
             analysisResult.referenceComparison.metrics.forEach { m ->
                 sb.appendLine("\"${m.name}\",\"${m.referenceValue}\",\"${m.patientValue}\"")
             }
-            val file = File(context.getExternalFilesDir(null), "colonpath_analysis_table_${analysisResult.case.caseId}.csv")
+            val file = File(context.getExternalFilesDir(null), "colonpath_analysis_table_${effectiveCaseId}.csv")
             file.writeText(sb.toString())
             shareFile(context, file, "text/csv")
             true
@@ -144,7 +153,23 @@ fun ReportScreen(
     }
 
     fun generatePdfReport(context: Context): Boolean {
-        val file = PdfReportGenerator.generateReportPdf(context, analysisResult)
+        val repoCase = com.example.colonpath_ai.data.ColonPathRepository.currentCaseResult
+        val caseResultToReport = if (repoCase != null && repoCase.case_id == effectiveCaseId) {
+            repoCase
+        } else {
+            com.example.colonpath_ai.data.ColonPathRepository.casesList.find { it.case_id == effectiveCaseId }
+                ?: if (repoCase != null && (caseId.isNullOrBlank() || repoCase.case_id == caseId)) repoCase
+                else com.example.colonpath_ai.network.CaseResultDto(
+                    case_id = effectiveCaseId,
+                    timestamp = "Now",
+                    status = "COMPLETED"
+                )
+        }
+        val file = PdfReportGenerator.generateCaseReportPdf(
+            context = context,
+            caseResult = caseResultToReport,
+            specimenBitmap = if (caseResultToReport.case_id == com.example.colonpath_ai.data.ColonPathRepository.activeCaseId) com.example.colonpath_ai.data.ColonPathRepository.selectedBitmap else null
+        )
         return if (file != null) {
             shareFile(context, file, "application/pdf")
             true
@@ -271,7 +296,45 @@ fun ReportScreen(
                 }
             }
 
-            // 4. Nuclear Findings
+            // 4. Analyzed Specimen & HoVer-Net Combined Overlay
+            item {
+                ReportSectionCard(
+                    title = "Analyzed Specimen & AI Overlay",
+                    badge = "HoVer-Net Overlay"
+                ) {
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(240.dp),
+                        shape = RoundedCornerShape(8.dp),
+                        color = SurfaceWhite,
+                        border = BorderStroke(1.dp, CardBorder)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(6.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.hovernet_overlay),
+                                contentDescription = "HoVer-Net Combined Overlay",
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .clip(RoundedCornerShape(6.dp)),
+                                contentScale = ContentScale.Fit
+                            )
+                        }
+                    }
+                    Text(
+                        text = "Specimen Overlay: HoVer-Net nuclear boundaries (green), epithelial centroids (red), and inflammatory cells (blue).",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextSecondary
+                    )
+                }
+            }
+
+            // 5. Nuclear Findings
             item {
                 ReportSectionCard(
                     title = "Nuclear Findings",

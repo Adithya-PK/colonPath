@@ -1,0 +1,25 @@
+{
+  "case_id": "CASE_STEP4_INSPECT",
+  "nuclei": {
+    "total": 65,
+    "types": {
+      "1": 22,
+      "2": 1,
+      "3": 40,
+      "4": 2
+    },
+    "mean_area_px2": 140.8846153846154,
+    "mean_perimeter_px": 53.71447718877059,
+    "mean_eccentricity": 0.7397532977152328,
+    "mean_circularity": 0.6372100367739335
+  },
+  "glands": {
+    "total": 6,
+    "mean_area_pixels": 6799.833333333333,
+    "mean_perimeter_pixels": 422.2815978328387,
+    "mean_width_pixels": 55.5,
+    "mean_height_pixels": 87.66666666666667,
+    "mean_aspect_ratio": 1.6850029113187006,
+    "mean_circularity": 0.5804377416644827
+  }
+}

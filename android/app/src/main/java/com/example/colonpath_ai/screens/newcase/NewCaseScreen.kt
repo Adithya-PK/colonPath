@@ -222,6 +222,7 @@ fun NewCaseScreen(
                             status = CaseStatus.PENDING,
                             notes = notes
                         )
+                        com.example.colonpath_ai.data.SampleDataRepository.clearCurrentSelection()
                         onProceed(newCase)
                     },
                     modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp),

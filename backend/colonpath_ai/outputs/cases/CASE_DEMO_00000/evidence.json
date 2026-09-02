@@ -1,7 +1,7 @@
 {
   "case_id": "CASE_DEMO_00000",
-  "timestamp": "2026-09-01T09:48:13.876388+00:00",
-  "prediction_class": "NORM",
+  "timestamp": "2026-09-02T06:32:55.509318+00:00",
+  "prediction_class": "LYM",
   "prediction_confidence": 1.0,
   "calibrated_confidence": 1.0,
   "tumor_probability": 0.0,
@@ -14,13 +14,11 @@
   "nuclear_mean_area_px2": 138.53,
   "gland_total_count": 7,
   "gland_mean_circularity": 0.489,
-  "reference_top_category": "adenocarcinoma",
-  "reference_top_similarity_percent": 78.29,
   "priority_regions_count": 4,
   "region_ids": [
     "R_03",
-    "R_02",
     "R_01",
+    "R_02",
     "R_04"
   ]
 }

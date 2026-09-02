@@ -1,5 +1,5 @@
 """
-Evidence Validator for Anti-Hallucination Guardrails.
+Evidence Validator for Anti-Hallucination Guardrails & Clinical Decision-Support Quality.
 Strictly verifies that any explanation or narrative adheres 100% to computed evidence.json and case_result.json.
 """
 
@@ -22,6 +22,12 @@ class EvidenceValidator:
     PROHIBITED_PHRASES = [
         "confirmed cancer",
         "definitive diagnosis",
+        "definitively cancer",
+        "patient has cancer",
+        "proves cancer",
+        "proves malignancy",
+        "guaranteed",
+        "certain diagnosis",
         "100% accurate",
         "100% confident",
         "biopsy confirmed",
@@ -45,7 +51,6 @@ class EvidenceValidator:
 
         # 2. Check tissue class grounding
         pred_class = case_result.get("prediction", {}).get("class", "").upper()
-        # Find 3-4 letter uppercase tokens that look like tissue classes
         mentioned_classes = set(re.findall(r"\b(ADI|BACK|DEB|LYM|MUC|MUS|NORM|STR|TUM)\b", explanation_text))
         if mentioned_classes and pred_class not in mentioned_classes:
             errors.append(
@@ -60,7 +65,6 @@ class EvidenceValidator:
             errors.append(f"Invalid region ID cited: {invalid_regions}. Valid regions: {valid_region_ids}")
 
         # 4. Check numerical cell counts if explicitly stated in text
-        # If explicitly stating whole-slide counts e.g. "117 total nuclei" or overall summary
         n_match = re.search(r"(\d+)\s+(?:total\s+)?nuclei", text_lower)
         if n_match:
             stated_count = int(n_match.group(1))

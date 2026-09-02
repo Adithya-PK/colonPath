@@ -35,12 +35,18 @@ class TissueClassifier:
         self.normalizer = FeatureNormalizer.load(self.norm_path)
         self.model = MultimodalFusionNet()
 
-        if self.model_path.exists():
-            checkpoint = torch.load(self.model_path, map_location=self.device, weights_only=False)
-            if "model_state_dict" in checkpoint:
-                self.model.load_state_dict(checkpoint["model_state_dict"])
-            else:
-                self.model.load_state_dict(checkpoint)
+        if not self.model_path.exists():
+            raise FileNotFoundError(
+                f"Trained MultimodalFusionNet classifier checkpoint not found at '{self.model_path}'. "
+                f"Execution strictly forbids operating with unweighted/random classification models."
+            )
+
+        checkpoint = torch.load(self.model_path, map_location=self.device, weights_only=False)
+        if "model_state_dict" in checkpoint:
+            self.model.load_state_dict(checkpoint["model_state_dict"])
+        else:
+            self.model.load_state_dict(checkpoint)
+
         self.model.to(self.device)
         self.model.eval()
 

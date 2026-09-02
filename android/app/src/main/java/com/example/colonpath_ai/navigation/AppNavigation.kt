@@ -262,8 +262,13 @@ fun ColonPathNavigation() {
                 )
             }
             composable("analysis_progress") {
+                val currentCid = remember {
+                    com.example.colonpath_ai.data.ColonPathRepository.activeCaseId 
+                        ?: com.example.colonpath_ai.data.SampleDataRepository.activeCaseId 
+                        ?: "CASE_${System.currentTimeMillis()}"
+                }
                 AnalysisProgressScreen(
-                    caseId = "COL-2026-001",
+                    caseId = currentCid,
                     onComplete = { navController.navigate("analysis_result") { popUpTo("analysis_progress") { inclusive = true } } },
                     onBack = { navController.popBackStack() }
                 )
@@ -273,7 +278,10 @@ fun ColonPathNavigation() {
                     onBack = { navController.popBackStack() },
                     onMorphology = { navController.navigate("morphology") },
                     onComparison = { navController.navigate("comparison") },
-                    onReport = { navController.navigate("report") }
+                    onReport = {
+                        val cid = com.example.colonpath_ai.data.ColonPathRepository.activeCaseId ?: ""
+                        navController.navigate("report?caseId=$cid")
+                    }
                 )
             }
             composable("morphology") {
@@ -282,7 +290,20 @@ fun ColonPathNavigation() {
             composable("comparison") {
                 ComparisonScreen(
                     onBack = { navController.popBackStack() },
-                    onReport = { navController.navigate("report") }
+                    onReport = {
+                        val cid = com.example.colonpath_ai.data.ColonPathRepository.activeCaseId ?: ""
+                        navController.navigate("report?caseId=$cid")
+                    }
+                )
+            }
+            composable(
+                "report?caseId={caseId}",
+                arguments = listOf(navArgument("caseId") { type = NavType.StringType; nullable = true; defaultValue = null })
+            ) { backStackEntry ->
+                val caseId = backStackEntry.arguments?.getString("caseId")
+                ReportScreen(
+                    caseId = caseId,
+                    onBack = { navController.popBackStack() }
                 )
             }
             composable("report") {
@@ -302,7 +323,7 @@ fun ColonPathNavigation() {
                 CaseDetailsScreen(
                     caseId = caseId,
                     onBack = { navController.popBackStack() },
-                    onViewReport = { navController.navigate("report") },
+                    onViewReport = { navController.navigate("report?caseId=$caseId") },
                     onRetake = { navController.navigate("image_selection") }
                 )
             }

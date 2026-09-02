@@ -280,7 +280,7 @@ def main():
             )
 
             print(
-                f"  ✓ Saved best model: {model_path}"
+                f"  [OK] Saved best model: {model_path}"
             )
 
 

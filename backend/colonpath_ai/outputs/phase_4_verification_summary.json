@@ -1,0 +1,176 @@
+{
+  "multi_case_verification": [
+    {
+      "case_id": "CASE_VERIFY_DISTINCT_001",
+      "image_file": "00000.png",
+      "image_sha256": "293675dbba53e386",
+      "elapsed_seconds": 42.74,
+      "prediction_class": "NORM",
+      "confidence": 0.9564,
+      "calibrated_confidence": 0.9094,
+      "tumor_probability": 0.0,
+      "binary_class": "NON-TUM",
+      "uncertainty_level": "LOW",
+      "uncertainty_score": 0.1638,
+      "entropy": 0.3833,
+      "ood_status": "IN_DISTRIBUTION",
+      "agreement_level": "MEDIUM",
+      "nuclear_count": 117,
+      "nuclear_mean_area": 138.53,
+      "gland_count": 7,
+      "gland_circularity": 0.489,
+      "top_reference_category": "normal",
+      "top_reference_similarity": 75.7,
+      "priority_regions_count": 4,
+      "explanation_validated": true
+    },
+    {
+      "case_id": "CASE_VERIFY_DISTINCT_002",
+      "image_file": "00001.png",
+      "image_sha256": "739b3986fe8643f1",
+      "elapsed_seconds": 41.04,
+      "prediction_class": "NORM",
+      "confidence": 0.8042,
+      "calibrated_confidence": 0.7117,
+      "tumor_probability": 0.0,
+      "binary_class": "NON-TUM",
+      "uncertainty_level": "MEDIUM",
+      "uncertainty_score": 0.4282,
+      "entropy": 0.9425,
+      "ood_status": "IN_DISTRIBUTION",
+      "agreement_level": "MEDIUM",
+      "nuclear_count": 95,
+      "nuclear_mean_area": 138.22,
+      "gland_count": 13,
+      "gland_circularity": 0.541,
+      "top_reference_category": "normal",
+      "top_reference_similarity": 80.7,
+      "priority_regions_count": 4,
+      "explanation_validated": true
+    },
+    {
+      "case_id": "CASE_VERIFY_DISTINCT_003",
+      "image_file": "00002.png",
+      "image_sha256": "92fd6dab81f2b88d",
+      "elapsed_seconds": 36.67,
+      "prediction_class": "NORM",
+      "confidence": 0.754,
+      "calibrated_confidence": 0.6597,
+      "tumor_probability": 0.0,
+      "binary_class": "NON-TUM",
+      "uncertainty_level": "MEDIUM",
+      "uncertainty_score": 0.4849,
+      "entropy": 1.0555,
+      "ood_status": "IN_DISTRIBUTION",
+      "agreement_level": "MEDIUM",
+      "nuclear_count": 125,
+      "nuclear_mean_area": 142.05,
+      "gland_count": 12,
+      "gland_circularity": 0.664,
+      "top_reference_category": "normal",
+      "top_reference_similarity": 80.1,
+      "priority_regions_count": 4,
+      "explanation_validated": true
+    },
+    {
+      "case_id": "CASE_VERIFY_DISTINCT_004",
+      "image_file": "00003.png",
+      "image_sha256": "95606280f97ba60f",
+      "elapsed_seconds": 35.51,
+      "prediction_class": "NORM",
+      "confidence": 0.995,
+      "calibrated_confidence": 0.9835,
+      "tumor_probability": 0.0,
+      "binary_class": "NON-TUM",
+      "uncertainty_level": "LOW",
+      "uncertainty_score": 0.0364,
+      "entropy": 0.0963,
+      "ood_status": "IN_DISTRIBUTION",
+      "agreement_level": "MEDIUM",
+      "nuclear_count": 72,
+      "nuclear_mean_area": 138.88,
+      "gland_count": 6,
+      "gland_circularity": 0.631,
+      "top_reference_category": "normal",
+      "top_reference_similarity": 72.0,
+      "priority_regions_count": 4,
+      "explanation_validated": true
+    }
+  ],
+  "cross_case_isolation": {
+    "status": "PASSED",
+    "case_a_isolated": true,
+    "case_b_isolated": true,
+    "no_bleed_verified": true
+  },
+  "failure_injection": {
+    "Mode_A_Missing_Image": {
+      "status_code": 422,
+      "passed": true
+    },
+    "Mode_B_Corrupted_Image": {
+      "status_code": 500,
+      "passed": true
+    },
+    "Mode_C_Unsupported_Extension": {
+      "status_code": 400,
+      "passed": true
+    },
+    "Mode_D_Path_Traversal_CaseID": {
+      "status_code": 400,
+      "passed": true
+    },
+    "Mode_E_Invalid_Visualization_Type": {
+      "status_code": 400,
+      "passed": true
+    },
+    "Mode_F_Copilot_Missing_Case": {
+      "status_code": 404,
+      "passed": true
+    },
+    "Mode_G_Evidence_Hallucination_Rejection": {
+      "passed": true,
+      "errors": [
+        "Prohibited overclaim detected: 'confirmed cancer'. Must use decision-support phrasing."
+      ]
+    },
+    "Mode_H_Vector_Retrieval_Engine": {
+      "passed": true,
+      "engine": "Local In-Memory Vector Search Engine"
+    },
+    "Mode_I_Case_Review_Signoff": {
+      "status_code": 200,
+      "passed": true
+    }
+  },
+  "input_image_integrity": [
+    {
+      "case_index": 1,
+      "filename": "00000.png",
+      "path": "C:\\Users\\apk05\\OneDrive\\Desktop\\Projects\\ColonPathAIV2\\cv\\datasets\\conic2022_processed\\images\\00000.png",
+      "size_bytes": 143215,
+      "sha256": "293675dbba53e3860cb4be899e8be93609ec66e732c3e2d844ab4ca9b16e595f"
+    },
+    {
+      "case_index": 2,
+      "filename": "00001.png",
+      "path": "C:\\Users\\apk05\\OneDrive\\Desktop\\Projects\\ColonPathAIV2\\cv\\datasets\\conic2022_processed\\images\\00001.png",
+      "size_bytes": 137684,
+      "sha256": "739b3986fe8643f10cdeb2ecc1bd58d7eeefccdc67d31a27f21e5a86490bf793"
+    },
+    {
+      "case_index": 3,
+      "filename": "00002.png",
+      "path": "C:\\Users\\apk05\\OneDrive\\Desktop\\Projects\\ColonPathAIV2\\cv\\datasets\\conic2022_processed\\images\\00002.png",
+      "size_bytes": 138412,
+      "sha256": "92fd6dab81f2b88d36e2e4981343efb4553bd3e9c51cac82c2fbdaf997335997"
+    },
+    {
+      "case_index": 4,
+      "filename": "00003.png",
+      "path": "C:\\Users\\apk05\\OneDrive\\Desktop\\Projects\\ColonPathAIV2\\cv\\datasets\\conic2022_processed\\images\\00003.png",
+      "size_bytes": 132882,
+      "sha256": "95606280f97ba60f5a6e4838c618fabf67b6f4e4efc9a572b048cecd5ef6f2e9"
+    }
+  ]
+}

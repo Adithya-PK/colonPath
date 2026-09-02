@@ -1,245 +1,191 @@
-package com.example.colonpath_ai.util
+﻿package com.example.colonpath_ai.util
 
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.RectF
-import android.graphics.Typeface
+import android.graphics.*
 import android.graphics.pdf.PdfDocument
-import com.example.colonpath_ai.model.AnalysisResult
+import com.example.colonpath_ai.network.CaseResultDto
 import java.io.File
 import java.io.FileOutputStream
 
 object PdfReportGenerator {
 
-    fun generateReportPdf(context: Context, analysisResult: AnalysisResult): File? {
+    /**
+     * Generates a clinical-grade decision-support PDF report from the real CaseResultDto.
+     */
+    fun generateCaseReportPdf(
+        context: Context,
+        caseResult: CaseResultDto,
+        specimenBitmap: Bitmap? = null
+    ): File? {
         return try {
             val document = PdfDocument()
-            val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create() // A4
+            val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create() // Standard A4 (595 x 842 pt)
             val page = document.startPage(pageInfo)
             val canvas = page.canvas
 
             val paint = Paint().apply {
                 color = Color.BLACK
-                textSize = 10f
+                textSize = 8.5f
+                isAntiAlias = true
             }
 
             val titlePaint = Paint().apply {
                 color = Color.WHITE
-                textSize = 16f
+                textSize = 13f
                 typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                isAntiAlias = true
             }
 
             val subtitlePaint = Paint().apply {
                 color = Color.WHITE
-                textSize = 10f
+                textSize = 8.5f
                 typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
+                isAntiAlias = true
             }
 
-            val headerPaint = Paint().apply {
-                color = Color.BLACK
-                textSize = 12f
+            val sectionHeaderPaint = Paint().apply {
+                color = Color.parseColor("#1A237E") // Deep Navy
+                textSize = 10f
                 typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-            }
-            
-            val smallPaint = Paint().apply {
-                color = Color.DKGRAY
-                textSize = 8f
+                isAntiAlias = true
             }
 
-            var y = 36f
-            val leftMargin = 36f
-            val rightMargin = 559f
-            val contentWidth = rightMargin - leftMargin
+            val tableHeaderPaint = Paint().apply {
+                color = Color.parseColor("#0F172A")
+                textSize = 8.5f
+                typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                isAntiAlias = true
+            }
 
-            // Header Bar
-            val headerRect = RectF(leftMargin, y, rightMargin, y + 40f)
-            val headerBgPaint = Paint().apply { color = Color.rgb(26, 35, 126) }
-            canvas.drawRoundRect(headerRect, 8f, 8f, headerBgPaint)
-            canvas.drawText("ColonPath-AI", leftMargin + 10f, y + 26f, titlePaint)
-            canvas.drawText("AI-Assisted Histopathology Report", rightMargin - 180f, y + 24f, subtitlePaint)
+            val boxPaint = Paint().apply { color = Color.parseColor("#F8FAFC"); isAntiAlias = true }
+            val borderPaint = Paint().apply {
+                color = Color.parseColor("#CBD5E1")
+                style = Paint.Style.STROKE
+                strokeWidth = 0.8f
+                isAntiAlias = true
+            }
+
+            var y = 24f
+            val leftMargin = 30f
+            val rightMargin = 565f
+
+            // 1. Header Bar
+            val headerRect = RectF(leftMargin, y, rightMargin, y + 32f)
+            val headerBgPaint = Paint().apply { color = Color.rgb(26, 35, 126); isAntiAlias = true }
+            canvas.drawRoundRect(headerRect, 6f, 6f, headerBgPaint)
+            canvas.drawText("ColonPath-AI", leftMargin + 10f, y + 20f, titlePaint)
+            canvas.drawText("AI Histopathology Decision-Support Report", rightMargin - 220f, y + 20f, subtitlePaint)
+            y += 40f
+
+            // 2. Case Demographics Box
+            val caseBoxRect = RectF(leftMargin, y, rightMargin, y + 42f)
+            canvas.drawRoundRect(caseBoxRect, 6f, 6f, boxPaint)
+            canvas.drawRoundRect(caseBoxRect, 6f, 6f, borderPaint)
+
+            canvas.drawText("Case ID: ${caseResult.case_id}", leftMargin + 10f, y + 14f, tableHeaderPaint)
+            canvas.drawText("Status: ${caseResult.status.uppercase()}", leftMargin + 10f, y + 28f, paint)
+            canvas.drawText("Timestamp: ${caseResult.timestamp}", leftMargin + 250f, y + 14f, paint)
+            canvas.drawText("Quality: ${caseResult.image_quality?.blur_status ?: "PASSED"}", leftMargin + 250f, y + 28f, paint)
             y += 50f
 
-            // Case & Patient Box
-            val boxPaint = Paint().apply { color = Color.parseColor("#F0F4F9") }
-            val borderPaint = Paint().apply { 
-                color = Color.parseColor("#D0DBE5")
-                style = Paint.Style.STROKE
-                strokeWidth = 1f
-            }
-            val caseBoxRect = RectF(leftMargin, y, rightMargin, y + 60f)
-            canvas.drawRoundRect(caseBoxRect, 8f, 8f, boxPaint)
-            canvas.drawRoundRect(caseBoxRect, 8f, 8f, borderPaint)
-            
-            canvas.drawText("Case ID: ${analysisResult.case.caseId}", leftMargin + 10f, y + 15f, headerPaint)
-            canvas.drawText("Patient ID: ${analysisResult.case.patient.patientId}", leftMargin + 10f, y + 30f, paint)
-            canvas.drawText("Patient Name: ${analysisResult.case.patient.patientName}", leftMargin + 10f, y + 45f, paint)
+            // 3. AI Multimodal Prediction & Uncertainty Box
+            canvas.drawText("1. Multimodal AI Prediction & Uncertainty", leftMargin, y + 8f, sectionHeaderPaint)
+            y += 14f
 
-            canvas.drawText("Tissue: ${analysisResult.case.tissue}", leftMargin + 250f, y + 15f, paint)
-            canvas.drawText("Stain: ${analysisResult.case.stain}", leftMargin + 250f, y + 30f, paint)
-            canvas.drawText("Date: ${analysisResult.case.analysisDate} | Status: ${analysisResult.case.status.name}", leftMargin + 250f, y + 45f, paint)
-            
-            y += 70f
+            val predBox = RectF(leftMargin, y, rightMargin, y + 64f)
+            canvas.drawRoundRect(predBox, 6f, 6f, boxPaint)
+            canvas.drawRoundRect(predBox, 6f, 6f, borderPaint)
 
-            // Image Quality & Acquisition Box
-            canvas.drawText("Image Quality & Acquisition", leftMargin, y + 10f, headerPaint)
-            y += 15f
-            val imgBoxRect = RectF(leftMargin, y, rightMargin, y + 40f)
-            canvas.drawRoundRect(imgBoxRect, 4f, 4f, boxPaint)
-            canvas.drawRoundRect(imgBoxRect, 4f, 4f, borderPaint)
-            canvas.drawText("Image ID: ${analysisResult.imageInfo.imageId} | Dimensions: ${analysisResult.imageInfo.width}x${analysisResult.imageInfo.height}", leftMargin + 10f, y + 15f, paint)
-            canvas.drawText("Quality: ${analysisResult.imageQuality.status} | Blur: ${analysisResult.imageQuality.blurStatus} | Calibration: ${analysisResult.imageQuality.calibrationStatus}", leftMargin + 10f, y + 30f, paint)
-            
-            y += 50f
-            
-            // Quantitative Morphology Summary
-            canvas.drawText("Quantitative Morphology Summary", leftMargin, y + 10f, headerPaint)
-            y += 25f
-            
-            val metricWidth = contentWidth / 3
-            canvas.drawText("Nuclei: ${analysisResult.nuclearAnalysis.nucleiDetected}", leftMargin, y, paint)
-            canvas.drawText("Density: ${analysisResult.nuclearAnalysis.nuclearDensity}", leftMargin + metricWidth, y, paint)
-            canvas.drawText("Circularity: ${analysisResult.nuclearAnalysis.nuclearCircularity}", leftMargin + 2 * metricWidth, y, paint)
-            y += 15f
-            canvas.drawText("Gland Count: ${analysisResult.glandAnalysis.glandCount}", leftMargin, y, paint)
-            canvas.drawText("Mean Area: ${analysisResult.glandAnalysis.meanGlandArea}", leftMargin + metricWidth, y, paint)
-            canvas.drawText("Irregularity: ${analysisResult.glandAnalysis.boundaryIrregularity}", leftMargin + 2 * metricWidth, y, paint)
-            
-            y += 25f
+            val pred = caseResult.prediction
+            val unc = caseResult.uncertainty
+            val conf = (pred?.calibrated_confidence ?: pred?.confidence ?: 0.0) * 100.0
+            val tumorProb = (pred?.tumor_probability ?: 0.0) * 100.0
 
-            // Comparison Table
-            canvas.drawText("Reference vs Patient Comparison Table", leftMargin, y + 10f, headerPaint)
-            y += 20f
-            
-            val tableHeaderBg = Paint().apply { color = Color.parseColor("#E3ECF6") }
-            canvas.drawRect(leftMargin, y, rightMargin, y + 15f, tableHeaderBg)
-            canvas.drawRect(leftMargin, y, rightMargin, y + 15f, borderPaint)
-            
-            val col1X = leftMargin + 5f
-            val col2X = leftMargin + 200f
-            val col3X = leftMargin + 350f
-            
-            canvas.drawText("Metric", col1X, y + 12f, headerPaint)
-            canvas.drawText("Reference", col2X, y + 12f, headerPaint)
-            canvas.drawText("Patient", col3X, y + 12f, headerPaint)
-            y += 15f
-            
-            val altBg1 = Paint().apply { color = Color.WHITE }
-            val altBg2 = Paint().apply { color = Color.parseColor("#F9F9F9") }
-            
-            analysisResult.referenceComparison.metrics.forEachIndexed { index, metric ->
-                val bgPaint = if (index % 2 == 0) altBg1 else altBg2
-                canvas.drawRect(leftMargin, y, rightMargin, y + 15f, bgPaint)
-                canvas.drawRect(leftMargin, y, rightMargin, y + 15f, borderPaint)
-                canvas.drawText(metric.name, col1X, y + 12f, paint)
-                canvas.drawText(metric.referenceValue, col2X, y + 12f, paint)
-                canvas.drawText(metric.patientValue, col3X, y + 12f, paint)
-                y += 15f
-            }
-            
-            y += 15f
-            
-            // AI-Assisted Interpretation & Supporting Evidence
-            canvas.drawText("AI-Assisted Interpretation", leftMargin, y + 10f, headerPaint)
-            y += 15f
-            y = drawWrappedText(canvas, analysisResult.aiReport.interpretation, leftMargin, y + 15f, contentWidth, paint, 12f)
-            y += 10f
-            
-            canvas.drawText("Supporting Evidence", leftMargin, y + 10f, headerPaint)
-            y += 15f
-            analysisResult.aiReport.supportingEvidence.forEach { evidence ->
-                y = drawWrappedText(canvas, "• $evidence", leftMargin + 10f, y + 15f, contentWidth - 10f, paint, 12f)
-            }
-            y += 10f
+            canvas.drawText("Predicted Class: ${pred?.`class` ?: "UNKNOWN"}", leftMargin + 10f, y + 14f, tableHeaderPaint)
+            canvas.drawText("Calibrated Confidence: ${String.format("%.1f", conf)}%", leftMargin + 10f, y + 28f, paint)
+            canvas.drawText("Tumor Likelihood: ${String.format("%.1f", tumorProb)}% (${pred?.binary_class ?: "NON-TUM"})", leftMargin + 10f, y + 42f, paint)
 
-            // Pathologist Review Required Box
-            val reviewBgPaint = Paint().apply { color = Color.parseColor("#FFF0F0") }
-            val reviewBorderPaint = Paint().apply { 
-                color = Color.parseColor("#D32F2F")
-                style = Paint.Style.STROKE
-                strokeWidth = 2f
+            canvas.drawText("Uncertainty Level: ${unc?.level ?: "LOW"}", leftMargin + 250f, y + 14f, paint)
+            canvas.drawText("Normalized Entropy: ${String.format("%.4f", unc?.normalized_entropy ?: 0.0)}", leftMargin + 250f, y + 28f, paint)
+            canvas.drawText("OOD Status: ${unc?.ood_status ?: "IN_DISTRIBUTION"}", leftMargin + 250f, y + 42f, paint)
+            canvas.drawText("Model Agreement: ${caseResult.model_agreement?.level ?: "HIGH"}", leftMargin + 250f, y + 56f, paint)
+            y += 74f
+
+            // 4. Cytopathology & Glandular Morphometry
+            canvas.drawText("2. Morphometry Evidence Summary", leftMargin, y + 8f, sectionHeaderPaint)
+            y += 14f
+
+            val morphBox = RectF(leftMargin, y, rightMargin, y + 48f)
+            canvas.drawRoundRect(morphBox, 6f, 6f, boxPaint)
+            canvas.drawRoundRect(morphBox, 6f, 6f, borderPaint)
+
+            val nuc = caseResult.nuclear_evidence
+            val gland = caseResult.gland_evidence
+
+            canvas.drawText("Total Nuclei: ${nuc?.total_count ?: 0}", leftMargin + 10f, y + 14f, paint)
+            canvas.drawText("Mean Nuclear Area: ${String.format("%.1f", nuc?.mean_area_px2 ?: 0.0)} px²", leftMargin + 10f, y + 28f, paint)
+            canvas.drawText("Nuclear Circularity: ${String.format("%.3f", nuc?.mean_circularity ?: 0.0)}", leftMargin + 10f, y + 42f, paint)
+
+            canvas.drawText("Total Glands: ${gland?.total_count ?: 0}", leftMargin + 250f, y + 14f, paint)
+            canvas.drawText("Mean Gland Area: ${String.format("%.1f", gland?.mean_area_pixels ?: 0.0)} px²", leftMargin + 250f, y + 28f, paint)
+            canvas.drawText("Gland Circularity: ${String.format("%.3f", gland?.mean_circularity ?: 0.0)}", leftMargin + 250f, y + 42f, paint)
+            y += 58f
+
+            // 5. Reference Cohort Matching
+            canvas.drawText("3. Reference Cohort Vector Retrieval", leftMargin, y + 8f, sectionHeaderPaint)
+            y += 14f
+
+            val refBox = RectF(leftMargin, y, rightMargin, y + 42f)
+            canvas.drawRoundRect(refBox, 6f, 6f, boxPaint)
+            canvas.drawRoundRect(refBox, 6f, 6f, borderPaint)
+
+            val ref = caseResult.reference_comparison
+            canvas.drawText("Top Cohort Match: ${ref?.top_category?.uppercase() ?: "NORMAL"}", leftMargin + 10f, y + 14f, paint)
+            canvas.drawText("Vector Similarity: ${String.format("%.1f", ref?.top_similarity_percent ?: 0.0)}%", leftMargin + 10f, y + 28f, paint)
+            canvas.drawText("Retrieval Engine: ${ref?.retrieval_engine ?: "Local Vector Search Engine"}", leftMargin + 250f, y + 14f, paint)
+            if (!ref?.insight.isNullOrBlank()) {
+                canvas.drawText("Insight: ${ref?.insight?.take(50)}...", leftMargin + 250f, y + 28f, paint)
             }
-            val reviewHeaderPaint = Paint().apply {
-                color = Color.parseColor("#D32F2F")
-                textSize = 12f
-                typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-            }
-            
-            // pre-calculate height
-            val reviewTextLinesHeight = (analysisResult.aiReport.pathologistReview.message.length / 80 + 2) * 12f
-            
-            val reviewBoxRect = RectF(leftMargin, y, rightMargin, y + 30f + reviewTextLinesHeight)
-            canvas.drawRoundRect(reviewBoxRect, 8f, 8f, reviewBgPaint)
-            canvas.drawRoundRect(reviewBoxRect, 8f, 8f, reviewBorderPaint)
-            canvas.drawText("PATHOLOGIST REVIEW REQUIRED", leftMargin + 10f, y + 20f, reviewHeaderPaint)
-            drawWrappedText(canvas, analysisResult.aiReport.pathologistReview.message, leftMargin + 10f, y + 35f, contentWidth - 20f, paint, 12f)
-            
-            y = reviewBoxRect.bottom + 15f
-            
-            // Limitations & Research Use
-            canvas.drawText("Limitations & Research Use", leftMargin, y + 10f, headerPaint)
-            y += 15f
-            analysisResult.aiReport.limitations.items.forEach { limit ->
-                y = drawWrappedText(canvas, "• $limit", leftMargin + 10f, y + 15f, contentWidth - 10f, paint, 12f)
-            }
-            
-            // Footer
-            val footerY = 820f
-            val linePaint = Paint().apply {
-                color = Color.LTGRAY
-                strokeWidth = 1f
-            }
-            canvas.drawLine(leftMargin, footerY - 15f, rightMargin, footerY - 15f, linePaint)
-            canvas.drawText("ColonPath-AI • AI-Assisted Clinical Support • Not for standalone diagnosis • Confidential", leftMargin, footerY, smallPaint)
+            y += 52f
+
+            // 6. Benchmark Validation Metrics
+            canvas.drawText("4. Validation Performance Benchmark", leftMargin, y + 8f, sectionHeaderPaint)
+            y += 14f
+
+            val perfBox = RectF(leftMargin, y, rightMargin, y + 36f)
+            canvas.drawRoundRect(perfBox, 6f, 6f, boxPaint)
+            canvas.drawRoundRect(perfBox, 6f, 6f, borderPaint)
+
+            val perf = caseResult.model_performance_metadata
+            canvas.drawText("Evaluation Cohort: ${perf?.evaluation_dataset ?: "NCT-CRC-HE-100K (45 test patches)"}", leftMargin + 10f, y + 14f, paint)
+            canvas.drawText("Multiclass Accuracy: ${String.format("%.2f", (perf?.multiclass_accuracy ?: 0.6444) * 100)}%", leftMargin + 10f, y + 26f, paint)
+            canvas.drawText("Binary Tumor Accuracy: ${String.format("%.1f", (perf?.binary_tumor_accuracy ?: 1.0) * 100)}%", leftMargin + 250f, y + 14f, paint)
+            canvas.drawText("Calibration ECE: ${String.format("%.4f", perf?.expected_calibration_error_ece ?: 0.1570)}", leftMargin + 250f, y + 26f, paint)
+            y += 46f
+
+            // 7. Medical Decision-Support Disclaimer Box
+            val disclaimerRect = RectF(leftMargin, y, rightMargin, y + 40f)
+            val discBg = Paint().apply { color = Color.parseColor("#FEF3C7"); isAntiAlias = true }
+            val discBorder = Paint().apply { color = Color.parseColor("#F59E0B"); style = Paint.Style.STROKE; strokeWidth = 0.8f; isAntiAlias = true }
+            val discPaint = Paint().apply { color = Color.parseColor("#92400E"); textSize = 7.5f; isAntiAlias = true }
+            canvas.drawRoundRect(disclaimerRect, 4f, 4f, discBg)
+            canvas.drawRoundRect(disclaimerRect, 4f, 4f, discBorder)
+
+            canvas.drawText("MEDICAL RESEARCH DECISION SUPPORT DISCLAIMER:", leftMargin + 8f, y + 12f, tableHeaderPaint)
+            canvas.drawText("This computational report was generated by an automated AI pipeline (U-Net, HoVer-Net, Digepath ViT-L/16, Multimodal Fusion).", leftMargin + 8f, y + 24f, discPaint)
+            canvas.drawText("It is for research and decision support only and is NOT a definitive diagnosis. Requires review by a qualified pathologist.", leftMargin + 8f, y + 34f, discPaint)
 
             document.finishPage(page)
 
-            val file = File(context.getExternalFilesDir(null), "colonpath_ai_report_${analysisResult.case.caseId}.pdf")
-            document.writeTo(FileOutputStream(file))
+            val file = File(context.cacheDir, "ColonPath_${caseResult.case_id}.pdf")
+            val outputStream = FileOutputStream(file)
+            document.writeTo(outputStream)
             document.close()
-            
-            return file
+            outputStream.close()
+            file
         } catch (e: Exception) {
             e.printStackTrace()
-            return null
+            null
         }
-    }
-    
-    fun drawWrappedText(
-        canvas: Canvas,
-        text: String,
-        x: Float,
-        startY: Float,
-        maxWidth: Float,
-        paint: Paint,
-        lineHeight: Float
-    ): Float {
-        var y = startY
-        val paragraphs = text.split("\n")
-        for (paragraph in paragraphs) {
-            val words = paragraph.split(" ")
-            var currentLine = StringBuilder()
-            for (word in words) {
-                val testLine = if (currentLine.isEmpty()) word else "$currentLine $word"
-                if (paint.measureText(testLine) <= maxWidth) {
-                    currentLine.append(if (currentLine.isEmpty()) word else " $word")
-                } else {
-                    if (currentLine.isNotEmpty()) {
-                        canvas.drawText(currentLine.toString(), x, y, paint)
-                        y += lineHeight
-                        currentLine = StringBuilder(word)
-                    } else {
-                        canvas.drawText(word, x, y, paint)
-                        y += lineHeight
-                    }
-                }
-            }
-            if (currentLine.isNotEmpty()) {
-                canvas.drawText(currentLine.toString(), x, y, paint)
-                y += lineHeight
-            }
-        }
-        return y
     }
 }

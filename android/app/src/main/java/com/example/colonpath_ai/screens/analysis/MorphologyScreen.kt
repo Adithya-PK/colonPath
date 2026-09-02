@@ -1,26 +1,33 @@
 package com.example.colonpath_ai.screens.analysis
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.colonpath_ai.components.*
+import com.example.colonpath_ai.data.ColonPathRepository
 import com.example.colonpath_ai.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MorphologyScreen(onBack: () -> Unit) {
-    val caseId = com.example.colonpath_ai.data.SampleDataRepository.activeCaseId ?: "COL-2026-001"
-    val analysisResult = com.example.colonpath_ai.data.SampleDataRepository.getAnalysisForCase(caseId)
+    val caseResult = ColonPathRepository.currentCaseResult
+    val caseId = caseResult?.case_id ?: ColonPathRepository.activeCaseId ?: "UNKNOWN_CASE"
+    val nuc = caseResult?.nuclear_evidence
+    val gland = caseResult?.gland_evidence
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Morphology Analysis") },
+                title = { Text("Morphometry Evidence") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -32,67 +39,80 @@ fun MorphologyScreen(onBack: () -> Unit) {
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
+                .background(BackgroundLight)
                 .padding(paddingValues),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
-                Badge(containerColor = AmberLight) {
-                    Text("Demo Analysis", color = TextPrimary)
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+                    border = BorderStroke(1.dp, CardBorder)
+                ) {
+                    Column(modifier = Modifier.padding(14.dp)) {
+                        Text("Case ID: $caseId", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium, color = TextPrimary)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            if (caseResult != null) "Quantitative morphometry dynamically extracted from U-Net & HoVer-Net."
+                            else "No active case loaded. Please run analysis on an H&E image to compute morphometry.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = TextSecondary
+                        )
+                    }
                 }
             }
 
+            // 1. Nuclear Morphometry
             item {
-                SectionHeader("Nuclear Morphology")
+                SectionHeader("Nuclear Morphometry (HoVer-Net)")
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    MetricCard("Mean Area", "${analysisResult.morphologyMetrics.nuclear.meanArea}", "px²", modifier = Modifier.weight(1f))
-                    MetricCard("Median Area", "${analysisResult.morphologyMetrics.nuclear.medianArea}", "px²", modifier = Modifier.weight(1f))
+                    MetricCard("Total Nuclei", "${nuc?.total_count ?: 0}", modifier = Modifier.weight(1f))
+                    MetricCard("Mean Area", "${String.format("%.1f", nuc?.mean_area_px2 ?: 0.0)}", "px²", modifier = Modifier.weight(1f))
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    MetricCard("Area Std Dev", "${analysisResult.morphologyMetrics.nuclear.areaStdDev}", modifier = Modifier.weight(1f))
-                    MetricCard("Circularity", "${analysisResult.morphologyMetrics.nuclear.meanCircularity}", modifier = Modifier.weight(1f))
+                    MetricCard("Perimeter", "${String.format("%.1f", nuc?.mean_perimeter_px ?: 0.0)}", "px", modifier = Modifier.weight(1f))
+                    MetricCard("Circularity", "${String.format("%.3f", nuc?.mean_circularity ?: 0.0)}", modifier = Modifier.weight(1f))
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    MetricCard("Eccentricity", "${analysisResult.morphologyMetrics.nuclear.meanEccentricity}", modifier = Modifier.weight(1f))
-                    MetricCard("Aspect Ratio", "${analysisResult.morphologyMetrics.nuclear.meanAspectRatio}", modifier = Modifier.weight(1f))
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    MetricCard("Pleomorphism Index", "${analysisResult.morphologyMetrics.nuclear.pleomorphismIndex}", modifier = Modifier.weight(1f))
+                    MetricCard("Eccentricity", "${String.format("%.3f", nuc?.mean_eccentricity ?: 0.0)}", modifier = Modifier.weight(1f))
                     Spacer(modifier = Modifier.weight(1f))
                 }
             }
 
+            // 2. Glandular Architecture Morphometry
             item {
-                SectionHeader("Gland Morphology")
+                SectionHeader("Gland Architecture (U-Net)")
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    MetricCard("Mean Area", "${analysisResult.morphologyMetrics.gland.meanArea}", "px²", modifier = Modifier.weight(1f))
-                    MetricCard("Area Variance", "${analysisResult.morphologyMetrics.gland.areaVariance}", modifier = Modifier.weight(1f))
+                    MetricCard("Gland Count", "${gland?.total_count ?: 0}", modifier = Modifier.weight(1f))
+                    MetricCard("Mean Gland Area", "${String.format("%.1f", gland?.mean_area_pixels ?: 0.0)}", "px²", modifier = Modifier.weight(1f))
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    MetricCard("Mean Perimeter", "${analysisResult.morphologyMetrics.gland.meanPerimeter}", "px", modifier = Modifier.weight(1f))
-                    MetricCard("Circularity", "${analysisResult.morphologyMetrics.gland.meanCircularity}", modifier = Modifier.weight(1f))
+                    MetricCard("Perimeter", "${String.format("%.1f", gland?.mean_perimeter_pixels ?: 0.0)}", "px", modifier = Modifier.weight(1f))
+                    MetricCard("Circularity", "${String.format("%.3f", gland?.mean_circularity ?: 0.0)}", modifier = Modifier.weight(1f))
                 }
                 Spacer(modifier = Modifier.height(8.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    MetricCard("Irregularity Index", "${analysisResult.morphologyMetrics.gland.irregularityIndex}", modifier = Modifier.weight(1f))
-                    MetricCard("Crowding Score", "${analysisResult.morphologyMetrics.gland.crowdingScore}", modifier = Modifier.weight(1f))
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    MetricCard("Branching Freq", "${analysisResult.morphologyMetrics.gland.branchingFrequency}", modifier = Modifier.weight(1f))
-                    Spacer(modifier = Modifier.weight(1f))
+                    MetricCard("Aspect Ratio", "${String.format("%.2f", gland?.mean_aspect_ratio ?: 0.0)}", modifier = Modifier.weight(1f))
+                    MetricCard("Mean Width", "${String.format("%.1f", gland?.mean_width_pixels ?: 0.0)}", "px", modifier = Modifier.weight(1f))
                 }
             }
 
+            // 3. Clinical Research Disclaimer
             item {
-                Card(colors = CardDefaults.cardColors(containerColor = SurfaceWhite)) {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+                    border = BorderStroke(1.dp, CardBorder)
+                ) {
                     Text(
-                        "Morphology metrics represent quantitative measurements. Clinical significance should be assessed by a pathologist.",
-                        modifier = Modifier.padding(16.dp),
+                        "Morphometry metrics represent quantitative computational measurements. Decision-support output for research use; requires qualified pathologist review.",
+                        modifier = Modifier.padding(14.dp),
                         style = MaterialTheme.typography.bodySmall,
                         color = TextSecondary
                     )

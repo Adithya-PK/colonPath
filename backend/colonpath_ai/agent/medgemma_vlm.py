@@ -115,8 +115,6 @@ class MedGemmaVLM:
         nuc_area = nuc.get("mean_area_px2", 0.0)
         gland_count = gland.get("total_count", 0)
         gland_circ = gland.get("mean_circularity", 0.0)
-        top_ref = ref.get("top_category", "none")
-        top_sim = ref.get("top_similarity_percent", 0.0)
         agr_level = agr.get("level", "UNKNOWN")
 
         # Build structured fields
@@ -126,7 +124,7 @@ class MedGemmaVLM:
         )
 
         visual_evidence = [
-            f"Digepath GI Foundation Model indicates visual embedding alignment with {pred_class} phenotype.",
+            f"Phikon-v2 GI Foundation Model indicates visual embedding alignment with {pred_class} phenotype.",
             f"Image quality check: {case_result.get('image_quality', {}).get('status', 'PASSED')}."
         ]
 
@@ -155,11 +153,6 @@ class MedGemmaVLM:
 
         model_agreement_str = f"Consensus Level: {agr_level}. {agr.get('summary', '')}"
 
-        reference_evidence = [
-            f"Curated reference cohort match: {top_ref} ({top_sim:.1f}% feature similarity).",
-            f"Feature distance: {ref.get('comparisons', [{}])[0].get('normalized_distance', 0.0):.3f}."
-        ]
-
         limitations = [
             "Research decision-support prototype; not an autonomous diagnostic device.",
             "Pathologist review recommended for all clinical correlations and staging.",
@@ -180,7 +173,6 @@ class MedGemmaVLM:
             "prediction_evidence": prediction_evidence,
             "uncertainty_explanation": uncertainty_explanation,
             "model_agreement": model_agreement_str,
-            "reference_evidence": reference_evidence,
             "limitations": limitations,
             "review_recommendation": review_rec,
         }
@@ -253,8 +245,7 @@ class MedGemmaVLM:
                 f"  - *Architecture:* Irregular, haphazardly fused, cribriform or single-file infiltrative glands; breached basement membrane (defining invasion through muscularis mucosae into submucosa); complex angulated lumina; luminal necrotic debris ('dirty necrosis'); desmoplastic stroma.\n\n"
                 f"• **Current Case Computational Metrics ({case_result.get('case_id')}):**\n"
                 f"  - Nuclear count: **{nuc.get('total_count', 0)} nuclei** (mean area: **{nuc.get('mean_area_px2', 0.0):.1f} px²**, circularity: **{nuc.get('mean_circularity', 0.0):.2f}**).\n"
-                f"  - Gland count: **{gland.get('total_count', 0)} glands** (mean circularity: **{gland.get('mean_circularity', 0.0):.2f}**, aspect ratio: **{gland.get('mean_aspect_ratio', 1.0):.2f}**).\n"
-                f"  - Reference Match: **{top_sim:.1f}% feature similarity** to curated **'{top_cat}'** reference cohort ({ref_id}).\n\n"
+                f"  - Gland count: **{gland.get('total_count', 0)} glands** (mean circularity: **{gland.get('mean_circularity', 0.0):.2f}**, aspect ratio: **{gland.get('mean_aspect_ratio', 1.0):.2f}**).\n\n"
                 f"*Clinical Limitation:* No single quantitative feature is independently diagnostic; diagnosis requires integrated architectural + cytological + invasive-status assessment by a qualified pathologist."
             )
 
@@ -396,16 +387,6 @@ class MedGemmaVLM:
                 f"Discordant findings: {'; '.join(discordant) if discordant else 'No major conflicts detected'}."
             )
 
-        # 7. Reference Case & Cohort Similarity Queries
-        elif any(w in q_lower for w in ["reference", "similar", "cohort", "match", "case_001", "database"]):
-            top_cat = ref.get("top_category", "none")
-            top_sim = ref.get("top_similarity_percent", 0.0)
-            ref_id = ref.get("top_reference_id", "reference_001")
-            ans = (
-                f"**Reference Retrieval:** The case exhibits **{top_sim:.1f}% morphological feature similarity** to the curated "
-                f"**'{top_cat}'** reference cohort ({ref_id}). {ref.get('insight', '')}"
-            )
-
         # 8. Navigation & "Next Region" Queries
         elif any(w in q_lower for w in ["next", "where to look", "review next", "what should i review", "first region"]):
             if regions:
@@ -508,8 +489,7 @@ class MedGemmaVLM:
                 f"- **Uncertainty:** {unc.get('level', 'LOW')} (Score: {unc.get('score', 0.0):.2f})\n"
                 f"- **Nuclear Count:** {nuc.get('total_count', 0)} nuclei (Mean Area: {nuc.get('mean_area_px2', 0.0):.1f} px²)\n"
                 f"- **Gland Count:** {gland.get('total_count', 0)} glands (Mean Circularity: {gland.get('mean_circularity', 0.0):.2f})\n"
-                f"- **Consensus Agreement:** {agr.get('level', 'LOW')}\n"
-                f"- **Top Reference Match:** {ref.get('top_category', 'none')} ({ref.get('top_similarity_percent', 0.0):.1f}%)"
+                f"- **Consensus Agreement:** {agr.get('level', 'LOW')}"
             )
 
         else:

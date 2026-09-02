@@ -1,14 +1,14 @@
 """
-Unit tests for Digepath feature extractor and embedding cache.
+Unit tests for authentic Phikon-v2 feature extractor and embedding cache.
 """
 
 from pathlib import Path
+from PIL import Image
 import numpy as np
 import pytest
-from foundation.digepath.preprocess import preprocess_image
-from foundation.digepath.model_loader import DigepathModelLoader
-from foundation.digepath.inference import DigepathFeatureExtractor
-from foundation.digepath.embedding_cache import EmbeddingCache
+from foundation.phikon.model_loader import FoundationModelLoader
+from foundation.phikon.inference import PhikonV2FeatureExtractor
+from foundation.phikon.embedding_cache import EmbeddingCache
 
 TEST_IMAGE_PATH = Path(__file__).resolve().parents[1] / "outputs" / "hovernet_test" / "input" / "00000.png"
 
@@ -16,14 +16,17 @@ TEST_IMAGE_PATH = Path(__file__).resolve().parents[1] / "outputs" / "hovernet_te
 def test_preprocess_image():
     if not TEST_IMAGE_PATH.exists():
         pytest.skip("Test image not found")
-    tensor = preprocess_image(TEST_IMAGE_PATH)
-    assert tensor.shape == (1, 3, 224, 224)
+    loader = FoundationModelLoader.get_instance()
+    img = Image.open(TEST_IMAGE_PATH).convert("RGB")
+    inputs = loader.processor(images=img, return_tensors="pt")
+    assert "pixel_values" in inputs
+    assert inputs["pixel_values"].shape == (1, 3, 224, 224)
 
 
-def test_digepath_feature_extraction():
+def test_phikon_feature_extraction():
     if not TEST_IMAGE_PATH.exists():
         pytest.skip("Test image not found")
-    extractor = DigepathFeatureExtractor()
+    extractor = PhikonV2FeatureExtractor()
     emb = extractor.extract(TEST_IMAGE_PATH)
     assert isinstance(emb, np.ndarray)
     assert emb.shape == (1024,)

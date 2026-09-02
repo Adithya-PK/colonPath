@@ -1,184 +1,188 @@
 # ColonPath-AI
 
 <div align="center">
-  <img src="app/src/main/res/drawable/colonpath_logo.png" alt="ColonPath-AI Logo" width="140" height="140" />
-  <h3>AI-Assisted Colorectal Histopathology Analysis</h3>
-  <p><strong>An Intelligent Mobile Platform for Quantitative Morphology, Reference Retrieval, and Automated Diagnostic Reporting in Digital Pathology.</strong></p>
+  <img src="app/src/main/res/drawable/colonpath_logo.png" alt="ColonPath-AI Official Logo" width="140" height="140" />
+  <h2>AI-Assisted Colorectal Histopathology Analysis</h2>
+  <p><strong>A Modern Android App for Quantitative Tissue Analysis, Reference Matching, and Automated Medical Reporting.</strong></p>
 
-  [![Android](https://img.shields.io/badge/Platform-Android%208.0%2B%20(API%2026%2B)-brightgreen.svg)](https://developer.android.com)
-  [![Kotlin](https://img.shields.io/badge/Language-Kotlin%202.0-blue.svg)](https://kotlinlang.org)
-  [![Jetpack Compose](https://img.shields.io/badge/UI-Jetpack%20Compose%20%2F%20Material%203-4285F4.svg)](https://developer.android.com/jetpack/compose)
-  [![Build Status](https://img.shields.io/badge/Build-Passing%20(Gradle)-success.svg)]()
-  [![License](https://img.shields.io/badge/License-Proprietary%20%2F%20Research-lightgrey.svg)]()
+  [![Android Platform](https://img.shields.io/badge/Platform-Android%208.0%2B%20(API%2026%2B)-3DDC84?style=for-the-badge&logo=android&logoColor=white)](https://developer.android.com)
+  [![Language](https://img.shields.io/badge/Language-Kotlin%202.0-7F52FF?style=for-the-badge&logo=kotlin&logoColor=white)](https://kotlinlang.org)
+  [![UI Framework](https://img.shields.io/badge/UI-Jetpack%20Compose%20%2F%20Material%203-4285F4?style=for-the-badge&logo=jetpackcompose&logoColor=white)](https://developer.android.com/jetpack/compose)
+  [![Build Status](https://img.shields.io/badge/Build-Passing-22C55E?style=for-the-badge&logo=gradle&logoColor=white)]()
+  [![Status](https://img.shields.io/badge/Status-Active%20Prototype-0EA5E9?style=for-the-badge)]()
 </div>
 
 ---
 
 ## 📖 Table of Contents
 
-1. [Executive Overview](#-executive-overview)
-2. [Current Implemented Features](#-current-implemented-features)
-3. [App Workflow & User Journey](#-app-workflow--user-journey)
-4. [Architecture & Technical Implementation](#-architecture--technical-implementation)
-5. [Project Structure](#-project-structure)
-6. [Roadmap: What's There to Add](#-roadmap-whats-there-to-add)
-7. [Installation & Build Guide](#-installation--build-guide)
-8. [Clinical & Research Disclaimer](#-clinical--research-disclaimer)
+1. [Overview & Purpose](#-overview--purpose)
+2. [Why ColonPath-AI? (Key Strengths)](#-why-colonpath-ai-key-strengths)
+3. [Understanding the Basics (Pathology & AI Concepts)](#-understanding-the-basics-pathology--ai-concepts)
+4. [Current Features (What is Built)](#-current-features-what-is-built)
+5. [How the App Works (User Workflow)](#-how-the-app-works-user-workflow)
+6. [App Architecture & Tech Stack](#-app-architecture--tech-stack)
+7. [Project Structure](#-project-structure)
+8. [Future Roadmap (What Comes Next)](#-future-roadmap-what-comes-next)
+9. [How to Run the Project](#-how-to-run-the-project)
+10. [Disclaimer](#-disclaimer)
 
 ---
 
-## 🔬 Executive Overview
+## 🔬 Overview & Purpose
 
-**ColonPath-AI** is a mobile-first digital pathology assistant designed to streamline the evaluation of Hematoxylin & Eosin (H&E) stained colorectal tissue specimens. The system bridges the gap between laboratory microscopy and computational pathology by offering:
+**ColonPath-AI** is a native Android application designed to assist doctors and pathologists in examining colorectal tissue biopsies stained with **Hematoxylin & Eosin (H&E)**.
 
-- **Automated Quantitative Morphology**: High-resolution measurement of nuclear pleomorphism, glandular architectural distortion, and spatial cell distribution.
-- **Reference-Guided Retrieval**: Comparative similarity analysis against histological reference databases.
-- **AI-Assisted Diagnostic Reports**: Instant structured diagnostic summaries, computational findings, and automated A4 PDF export.
-- **Offline Clinical Record Storage**: Persistent on-device case tracking, status lifecycles, and pathologist note archiving.
+In standard hospital pathology, examining microscope slides manually takes significant time and relies heavily on visual estimation. **ColonPath-AI** introduces a digital, assistive workflow right on an Android phone or tablet:
+- **Measures cell structures automatically** (cell density, shape circularity, gland sizes).
+- **Finds similar historical reference cases** to help guide the evaluation.
+- **Generates instant, formatted A4 PDF medical reports** with one tap.
+- **Stores and manages biopsy cases securely offline** on the device.
 
 ---
 
-## ✨ Current Implemented Features
+## 🌟 Why ColonPath-AI? (Key Strengths)
 
-### 1. 🚀 Launch & Brand Experience
-- **Official Branding**: Centered high-resolution ColonPath-AI neural-lattice branding with subtle scaling entrance animations.
-- **Interactive Startup Sequence**: Animated medical-grade progress loader transitioning seamlessly into the main dashboard.
-- **Native Launcher Icons**: Multi-density mipmap support (`mdpi` through `xxxhdpi`) with adaptive white background.
+- **📱 Mobile-First & Lightweight**: Built 100% natively in Kotlin and Jetpack Compose for smooth, zero-lag performance on mobile devices.
+- **🔬 Interactive Multi-Layer Viewer**: Switch easily between raw tissue images, nuclear detection masks, gland boundary outlines, and combined AI overlays.
+- **📐 Clear Quantitative Metrics**: Replaces vague guesswork with concrete numbers (e.g., cell count, average gland area, shape irregularity).
+- **🔍 Transparent Reference Retrieval**: Instead of giving an unexplained "black-box" prediction, it shows the closest matching reference cases and explains *why* they match.
+- **📄 Built-in PDF Report Engine**: Directly creates printable A4 medical reports with clean tables and patient info without needing external cloud converters.
+- **💾 Smart Offline Case Storage**: Auto-generates clean, non-colliding Case IDs (`COL-2026-007`) and saves case history directly to device storage so nothing is lost when the app closes.
+
+---
+
+## 🧠 Understanding the Basics (Pathology & AI Concepts)
+
+### 1. What is an H&E Stained Biopsy?
+- **Hematoxylin (Blue/Purple)**: Stains cell nuclei containing DNA and RNA.
+- **Eosin (Pink/Red)**: Stains the cytoplasm and connective tissue surrounding cells.
+
+### 2. Normal Tissue vs. Abnormal Tissue
+- **Normal Colon Tissue**: Regular, neatly spaced glands (crypts) with small, uniform round nuclei resting neatly at the base.
+- **Adenoma (Pre-cancerous Polyp)**: Cells become crowded and elongated; glands become irregular and start branching.
+- **Adenocarcinoma (Cancer)**: Cells lose their normal organized shape, glands become disordered and back-to-back, and cell nuclei become enlarged and irregular.
+
+### 3. How the Computer Measures Tissue
+- **Cell Density**: How many cell nuclei are packed into a square millimeter of tissue. Higher density usually indicates active cell growth.
+- **Nuclear Circularity**: How close a cell nucleus is to a perfect circle (a value of $1.0$ is a circle; values below $0.75$ mean the nucleus is irregular or deformed).
+- **Gland Boundary Irregularity**: Measures how bumpy or distorted the gland edges are compared to healthy, smooth glands.
+- **Similarity Score**: How closely the specimen's visual features match reference images in the database (expressed as a percentage, e.g., $94.2\%$).
+
+---
+
+## ✨ Current Features (What is Built)
+
+### 1. 🚀 Splash & Launch Screen
+- Centered circular official **ColonPath-AI** logo with a smooth 360° breathing pulse animation.
+- Modern gradient loading bar that smoothly transitions straight into the Dashboard.
 
 ### 2. 📊 Interactive Dashboard
-- **Dynamic Case Analytics**: Real-time calculated counters for **Total Cases**, **Completed**, **Pending Review**, and **Active Pipeline Cases**.
-- **Hero Action Center**: Dual interactive pill buttons for `+ New Analysis` and `Camera Live Analysis`.
-- **Recent Case Overview**: Visual preview of the latest analyzed specimen with status indicators.
-- **Quick-Access Case Cards**: Direct navigation to detailed case analysis reports and specimen metadata.
+- Live dashboard analytics showing **Total Cases**, **Completed**, **Pending Review**, **In Progress**, and **Failed**.
+- Quick-action buttons to launch a **New Analysis** or open the **Microscope Camera**.
+- Visual preview card showing the most recently analyzed case.
 
-### 3. 📝 New Case Creation & Sequential ID Auto-Generation
-- **Automated Identifier Generation**: Auto-generates unique sequential Case IDs (`COL-2026-006...`) and Patient IDs (`PT-2026-xxxx`).
-- **Specimen Metadata Tracking**: Configurable tissue origin (*Colorectal, Ascending Colon, Rectum*), sample type (*Biopsy, Polypectomy, Resection*), and staining protocol (*H&E standard, Special Stain*).
-- **Persistent Notes Storage**: Bi-directional patient and specimen notes saved across sessions.
+### 3. 📝 Smart Case Creation & Auto-Sequencing
+- **Auto-Calculated Case IDs**: Automatically finds the highest existing case number and generates the next one (`COL-2026-007`).
+- **Duplicate Prevention**: If a Case ID already exists, the app alerts you immediately in red and prevents saving duplicates.
+- **Reusable Patient IDs**: Multiple biopsy cases can belong to the same Patient ID (`PT-2026-0847`).
+- **One-Tap Demo Fill**: Allows quickly filling test sample data with a single button tap.
 
-### 4. 📷 Image Acquisition & Live Microscope Interface
-- **Specimen Image Selection**: Gallery and file system selection interface with magnification and image quality checks.
-- **Live USB Microscope Viewport**: Dedicated camera integration layout with OTG/USB hardware connection status, live frame capture controls, and optical calibration readouts.
+### 4. 📷 Image Picker & Live Microscope Viewport
+- Select specimen images from device storage with automatic quality validation.
+- Live camera screen with USB/OTG microscope status detection and capture controls.
 
-### 5. ⚡ Real-Time Pipeline Simulation
-- **Multi-Stage Analysis Pipeline**: Rapid, fluid step-by-step progress tracking:
-  1. Image Quality Assessment
-  2. Nuclear Segmentation & Density Computation
-  3. Nuclear Pleomorphism Classification
-  4. Gland Boundary Segmentation
-  5. Morphology & Spacing Metric Extraction
-  6. Reference Case Vector Retrieval
-  7. Multi-Evidence AI Reasoning
-  8. Diagnostic Report Synthesis
+### 5. ⚡ 9-Stage Pipeline Simulation
+- A sleek loading screen showing step-by-step progress:
+  1. Image standardization $\to$ 2. Quality check $\to$ 3. Nuclear analysis $\to$ 4. Cell classification $\to$ 5. Gland segmentation $\to$ 6. Morphology analysis $\to$ 7. Reference retrieval $\to$ 8. AI reasoning $\to$ 9. Report generation.
+- Dynamic checkmarks, active animated spinners, and live percentage counter ($0\% \to 100\%$).
 
-### 6. 🔬 Multi-Layer Visualization & Analysis Results
-- **Multi-Layer Image Viewer**: Dynamic layer switching between **Original H&E**, **Nuclear Segmentation**, **Gland Boundaries**, and **Combined AI Overlays**.
-- **Diagnostic Confidence Summary**: AI primary assessment with structured confidence metrics and morphological indicators.
-- **Save to History Action**: One-tap action to commit the case to permanent storage, update status to `COMPLETED`, and present instant confirmation feedback.
+### 6. 🔬 Multi-Layer Results & Morphology Analysis
+- **Layer Toggle Viewer**: Switch seamlessly between *Original H&E*, *Nuclear Mask*, *Gland Contours*, and *Combined AI View*.
+- **Quantitative Morphology Panel**: Displays detailed tables for nuclear area, density, circularity, gland count, and architectural spacing.
+- **Save Case to History**: One tap permanently saves the analysis to the on-device database.
 
-### 7. 📐 Deep Quantitative Morphology Analysis
-- **Nuclear Architecture**:
-  - Nuclear Count & Density ($\text{nuclei/mm}^2$)
-  - Mean Nuclear Area & Perimeter ($\mu\text{m}^2$, $\mu\text{m}$)
-  - Nuclear Circularity Index & Pleomorphism Distribution
-  - Nuclear-to-Cytoplasmic (N:C) Ratio Estimation
-- **Glandular Architecture**:
-  - Total Gland Count & Mean Area
-  - Glandular Spacing & Spatial Density
-  - Branching & Lumen Boundary Irregularity
-  - Architectural Crowding & Cribriform Pattern Index
+### 7. 🔍 Reference Case Comparison
+- Displays top matching reference cases (e.g., `REF-021` - $94.2\%$ similarity).
+- Direct side-by-side comparison table: **Metric | Reference Baseline | Patient Specimen**.
+- Expandable *"Why This Result?"* section explaining the visual feature match.
 
-### 8. 🔍 Reference Case Comparison Matrix
-- **Similarity Scoring**: Ranked cosine/vector similarity against verified historical case archives.
-- **Side-by-Side Morphology Breakdown**: Quantitative comparison table contrasting the active specimen against reference cases for cellular density, nuclear atypicality, and gland architecture.
-- **AI Differential Evidence**: Contextual rationale explaining match confidence and histological similarities.
+### 8. 📄 Standardized Report & PDF Engine
+- Fully aligned report cards with identical width, padding, and clean typography.
+- **Download PDF Report**: Generates an A4 PDF medical report on device with tables, diagnostics, and patient info.
+- **Download Analysis Table (CSV)**: Export raw measurements to a spreadsheet file with a dedicated pale blue action button.
 
-### 9. 📄 Native A4 Medical PDF Report Engine (`PdfReportGenerator.kt`)
-- **Direct Canvas Vector Generation**: Generates standard A4 medical reports using Android's native `PdfDocument` engine without external rendering dependencies.
-- **Automated Word-Boundary Wrapping**: Robust dynamic layout engine that prevents text clipping across arbitrary screen resolutions.
-- **Clinical Layout Architecture**:
-  - Medical Header & Patient Demographics Grid
-  - Computational Morphology Summary Box
-  - Multi-Column Comparison Table
-  - AI Differential Diagnosis & Uncertainty Bounds
-  - Pathologist Review Sign-off Block & Confidentiality Disclaimer
-- **Android FileProvider Sharing**: Instant sharing via WhatsApp, Email, Drive, or native print spoolers.
+### 9. 💾 Persistent Local Database & Lifecycle
+- Saves all cases to internal disk storage (`colonpath_cases.json`) via asynchronous background threads.
+- Mark case status (*Completed, Review Required, In Progress, Failed*).
+- Permanent case deletion with confirmation dialogs.
 
-### 10. 💾 Persistent Local Database & Lifecycle (`SampleDataRepository.kt`)
-- **Disk Persistence**: Saves all case records to internal storage (`colonpath_cases.json`).
-- **Non-Blocking Background I/O**: Asynchronous file writes via dedicated background executor (`Dispatchers.IO`), eliminating main-thread UI jank.
-- **Case Lifecycle Management**: Interactive status chips (*Completed, Review Required, In Progress, Failed*).
-- **Permanent Deletion**: In-card trash button with confirmation dialogs; deleted records are permanently removed across restarts.
-- **Failed Specimen Recovery**: Dedicated warning cards for failed specimens with **Retake Image** and **Request Second Review** triggers.
-
-### 11. ↔️ Directional Motion & Fluid UI Navigation
-- **Direction-Aware Page Transitions**: NavHost automatically detects whether navigation moves forward or backward in tab index, sliding screens seamlessly Left-to-Right or Right-to-Left.
-- **High-Performance Bottom Navigation**: Custom zero-latency navigation bar with an animated **64dp × 32dp** selection capsule.
+### 10. ↔️ Fluid Navigation & Directional Motion
+- Direction-aware page transitions (slides left or right depending on tab order).
+- Modern bottom navigation bar with a smooth **64dp × 32dp** animated capsule bubble.
 
 ---
 
-## 🗺️ App Workflow & User Journey
+## 🗺️ How the App Works (User Workflow)
 
 ```mermaid
 flowchart TD
-    A[Launch / Splash Screen] --> B[Dashboard Screen]
+    SPLASH[1. Splash Screen] --> DASH[2. Dashboard Screen]
     
-    B -->|New Case| C[New Case Screen]
-    B -->|Live Camera| D[Live Microscope Screen]
-    B -->|View History| E[History Screen]
-    B -->|Select Card| F[Case Details Screen]
+    DASH -->|New Case| NEWCASE[3. New Case Screen]
+    DASH -->|Microscope Camera| LIVE[4. Live Camera Viewport]
+    DASH -->|History| HIST[5. Case History Screen]
+    DASH -->|Select Case| DETAILS[6. Case Details Screen]
     
-    C -->|Auto-Generated IDs & Metadata| G[Image Selection Screen]
-    D -->|Capture Frame| G
+    NEWCASE -->|Next| IMGSEL[7. Image Selection Screen]
+    LIVE -->|Capture| IMGSEL
     
-    G -->|Trigger AI Analysis| H[Analysis Progress Pipeline]
+    IMGSEL -->|Analyze| PROG[8. Pipeline Progress Screen]
     
-    H -->|Analysis Complete| I[Analysis Result Screen]
+    PROG -->|Done| RESULT[9. Analysis Result Screen]
     
-    I -->|Inspect Layers| I
-    I -->|Save to History| E
-    I -->|View Nuclear/Gland Metrics| J[Morphology Screen]
-    I -->|View Reference Matches| K[Comparison Screen]
-    I -->|Generate Report| L[Report Screen]
+    RESULT -->|Save| HIST
+    RESULT -->|Metrics| MORPH[10. Morphology Screen]
+    RESULT -->|References| COMP[11. Reference Comparison Screen]
+    RESULT -->|Report| REPORT[12. AI-Assisted Report Screen]
     
-    L -->|Export PDF| M[Native PDF Share & Print]
-    
-    E -->|Filter/Search/Delete| F
-    F -->|Update Status / Retake / Review| F
+    REPORT -->|Share PDF| PDF[13. Printable A4 PDF Report]
+    REPORT -->|Share CSV| CSV[14. CSV Spreadsheet Export]
 ```
 
 ---
 
-## 🛠️ Architecture & Technical Implementation
+## 🛠️ App Architecture & Tech Stack
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    Jetpack Compose UI                       │
-│  (Screens: Splash, Dashboard, Analysis, Morphology, etc.)   │
+│  (Splash, Dashboard, NewCase, Progress, Result, Report)     │
 └──────────────────────────────┬──────────────────────────────┘
                                │
                                ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                   ColonPath Navigation                      │
-│     (Directional Transitions, Custom Smooth Bottom Bar)     │
+│                   App Navigation Router                     │
+│    (Direction-Aware Page Transitions, Custom Bottom Bar)    │
 └──────────────────────────────┬──────────────────────────────┘
                                │
                                ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                  SampleDataRepository                       │
-│   (Central Data Store, ID Generator, State Management)      │
+│             SampleDataRepository (Data Store)               │
+│   (Auto-ID Engine, In-Memory State, Duplicate Validation)   │
 └──────────────┬──────────────────────────────┬───────────────┘
                │                              │
                ▼                              ▼
 ┌──────────────────────────────┐┌─────────────────────────────┐
-│    Background I/O Storage    ││   PdfReportGenerator        │
-│    (colonpath_cases.json)    ││   (A4 Vector Canvas Engine) │
+│    Background File I/O       ││     PdfReportGenerator      │
+│    (colonpath_cases.json)    ││  (Android Vector A4 Canvas) │
 └──────────────────────────────┘└─────────────────────────────┘
 ```
 
-- **Architecture Pattern**: Decoupled Repository Pattern (`SampleDataRepository`). The UI layer interacts exclusively through state observables, allowing future backend replacement (FastAPI / SQLite / Room) without touching UI composables.
-- **Concurrency**: Asynchronous Kotlin Coroutines and background single-thread executors for file I/O and PDF generation.
-- **UI Framework**: 100% Jetpack Compose with Material 3 design tokens and custom medical color palette (`HEPink`, `Blue500`, `Navy800`, `GreenSuccess`, `AmberWarning`).
+- **Kotlin 2.0 & Jetpack Compose**: 100% modern declarative Android UI with Material 3 design tokens.
+- **Decoupled Repository Pattern**: The UI observes data models cleanly, making it ready to plug into a real backend API later without changing the UI screens.
+- **Native Android Canvas & `PdfDocument`**: Generates clean vector PDF documents directly on the device.
+- **Background I/O Executor**: File saving and reading run on background threads to ensure the UI stays fast and responsive.
 
 ---
 
@@ -187,95 +191,54 @@ flowchart TD
 ```text
 ColonPathAI/
 ├── app/
-│   ├── src/
-│   │   └── main/
-│   │       ├── AndroidManifest.xml          # App manifest & FileProvider configuration
-│   │       ├── java/com/example/colonpath_ai/
-│   │       │   ├── MainActivity.kt          # Edge-to-edge entry point & data init
-│   │       │   ├── components/              # Modular UI components
-│   │       │   │   ├── CaseCard.kt          # Full-width case card with embedded actions
-│   │       │   │   ├── ComparisonTable.kt   # Reference metrics data table
-│   │       │   │   ├── EmptyState.kt        # Search/filter empty state placeholder
-│   │       │   │   ├── ErrorState.kt        # Pipeline error recovery view
-│   │       │   │   ├── ImageViewer.kt       # Multi-layer H&E segmentation viewer
-│   │       │   │   ├── MetricCard.kt        # Quantitative morphology metric card
-│   │       │   │   ├── PipelineStep.kt      # Progress step indicator
-│   │       │   │   ├── SectionHeader.kt     # Accordion header with animated arrow
-│   │       │   │   └── StatusBadge.kt       # Clinical case status chip
-│   │       │   ├── data/
-│   │       │   │   └── SampleData.kt        # Repository, JSON persistence, Mock data
-│   │       │   ├── model/                   # Domain models
-│   │       │   │   ├── AIReport.kt          # Diagnostic report data structure
-│   │       │   │   ├── AnalysisResult.kt    # Full analysis container
-│   │       │   │   ├── Case.kt              # Specimen & patient case model
-│   │       │   │   ├── GlandAnalysis.kt     # Glandular morphology attributes
-│   │       │   │   ├── MorphologyMetrics.kt # Combined quantitative metrics
-│   │       │   │   ├── NuclearAnalysis.kt   # Nuclear pleomorphism metrics
-│   │       │   │   └── ReferenceResult.kt   # Comparative reference case model
-│   │       │   ├── navigation/
-│   │       │   │   └── AppNavigation.kt     # Directional NavHost & animated Bottom Bar
-│   │       │   ├── screens/
-│   │       │   │   ├── analysis/            # Analysis results & morphology screens
-│   │       │   │   ├── casedetails/         # Case detail view & status management
-│   │       │   │   ├── comparison/          # Reference retrieval comparison view
-│   │       │   │   ├── dashboard/           # Main stats & navigation dashboard
-│   │       │   │   ├── history/             # Case history search, filter, and delete
-│   │       │   │   ├── live/                # Live USB microscope camera view
-│   │       │   │   ├── newcase/             # New case metadata & image picker
-│   │       │   │   ├── report/              # Full clinical report preview
-│   │       │   │   └── splash/              # Animated brand launch screen
-│   │       │   ├── ui/theme/                # Typography, Shapes, Colors, Theme
-│   │       │   └── util/
-│   │       │       └── PdfReportGenerator.kt # A4 PDF vector canvas generator
-│   │       └── res/
-│   │           ├── drawable/                # Logo assets & adaptive vectors
-│   │           ├── mipmap-*/                # Multi-density app launcher icons
-│   │           └── xml/                     # FileProvider & backup rules
-├── build.gradle.kts                         # Project build configuration
-├── settings.gradle.kts                      # Dependency resolution
+│   └── src/
+│       └── main/
+│           ├── AndroidManifest.xml          # App manifest & file permissions
+│           ├── java/com/example/colonpath_ai/
+│           │   ├── MainActivity.kt          # App entry point & startup
+│           │   ├── components/              # Reusable UI widgets
+│           │   │   ├── CaseCard.kt          # Case card with delete & status chips
+│           │   │   ├── ComparisonTable.kt   # Reference vs patient comparison table
+│           │   │   ├── ImageViewer.kt       # Multi-layer H&E overlay viewer
+│           │   │   ├── MetricCard.kt        # Morphology metric card
+│           │   │   ├── SectionHeader.kt     # Expandable accordion header
+│           │   │   └── StatusBadge.kt       # Status pill (Completed, Failed, etc.)
+│           │   ├── data/
+│           │   │   └── SampleData.kt        # Repository, auto-ID logic, JSON storage
+│           │   ├── model/                   # Data classes (Case, Metrics, Report)
+│           │   ├── navigation/
+│           │   │   └── AppNavigation.kt     # Screen navigation & bottom bar
+│           │   ├── screens/                 # Full screen composables
+│           │   │   ├── analysis/            # Result, progress & morphology screens
+│           │   │   ├── casedetails/         # Case details & status editor
+│           │   │   ├── comparison/          # Reference retrieval comparison
+│           │   │   ├── dashboard/           # Main stats dashboard
+│           │   │   ├── history/             # Case history & search
+│           │   │   ├── live/                # Live microscope camera
+│           │   │   ├── newcase/             # New case form & image selector
+│           │   │   ├── report/              # Full clinical report view
+│           │   │   └── splash/              # Animated logo splash screen
+│           │   ├── ui/theme/                # Colors, Typography & Shapes
+│           │   └── util/
+│           │       └── PdfReportGenerator.kt # A4 PDF report generator
+│           └── res/                         # Logo drawables & mipmap icons
+├── build.gradle.kts                         # Build configuration
 └── README.md                                # Project documentation
 ```
 
 ---
 
-## 🔮 Roadmap: What's There to Add
+## 🔮 Future Roadmap (What Comes Next)
 
-### Phase 2: Python / FastAPI AI Backend Integration
-- [ ] **REST / WebSocket Client**: Replace mock repository calls with Retrofit/Ktor HTTP clients connecting to a remote FastAPI server.
-- [ ] **Deep Learning Inference Pipeline**:
-  - **Nuclear Segmentation**: Hover-Net / Cellpose / StarDist models.
-  - **Gland Boundary Extraction**: SegFormer / UNet for epithelial and lumen segmentation.
-  - **Histopathology Foundation Embeddings**: Image feature extraction using UNI / CONCH / Prov-GigaPath vision models.
-
-### Phase 3: Vector Retrieval & Whole Slide Image (WSI) Support
-- [ ] **Vector Database Search**: Integration with FAISS / Qdrant / Milvus for sub-second similarity retrieval across millions of reference cases.
-- [ ] **WSI Pyramid Viewer**: Support for multi-gigabyte SVS / NDPI / TIFF digital pathology whole slide images with deep-zoom tiling.
-- [ ] **Region of Interest (ROI) Cropping**: Touch-guided bounding box selection directly on the whole slide viewer.
-
-### Phase 4: Clinical Agentic Reasoning & LLM Integration
-- [ ] **Medical Multimodal LLM**: Connect analysis stage to clinical LLMs (e.g., Med-PaLM / Gemini Pro Medical) for automated narrative report drafting.
-- [ ] **Differential Diagnosis Ranking**: Ranked differential diagnostic hypotheses with explicit confidence scores and uncertainty boundaries.
-- [ ] **Pathologist Voice Dictation**: Voice-to-text integration for rapid case dictation and note transcription.
-
-### Phase 5: Hardware & Microscope Integration
-- [ ] **Direct USB UVC Driver**: Native Android USB Host driver to stream uncompressed 4K video directly from laboratory USB microscope cameras.
-- [ ] **Real-Time Focus & White Balance Assist**: Edge-detection assisted focus peaking and automated color normalization (Macenko / Vahadane staining normalization).
-
-### Phase 6: Hospital Enterprise & Cloud Sync
-- [ ] **DICOM Part 10 Compliance**: Read and write standard DICOM Whole Slide Imaging formats.
-- [ ] **HL7 / FHIR Integration**: Direct synchronization with Hospital Information Systems (HIS) and Laboratory Information Management Systems (LIMS).
-- [ ] **Multi-User Role-Based Access Control**: Separate permissions for Lab Technicians, Pathologists, and Chief Medical Officers.
+- [ ] **Phase 2: Python / FastAPI AI Backend**: Build a FastAPI web server to run real deep learning models for nuclear and gland segmentation.
+- [ ] **Phase 3: Vector Database Search**: Integrate vector search (e.g., FAISS or Qdrant) to match biopsy image embeddings against thousands of reference slides.
+- [ ] **Phase 4: Whole Slide Images (WSI)**: Support multi-gigabyte digital pathology slide files (`.svs`, `.ndpi`) with deep zoom.
+- [ ] **Phase 5: Medical LLM Integration**: Connect the report generator to a medical language model to automatically summarize diagnostic insights.
+- [ ] **Phase 6: Live USB Microscope Video**: Direct USB video driver to stream live 4K microscope feeds.
 
 ---
 
-## 🚀 Installation & Build Guide
-
-### Prerequisites
-- **Android Studio**: Ladybug (2024.2+) or newer.
-- **JDK**: Java 17 or Java 21 (`$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"`).
-- **Android Device / Emulator**: Android 8.0 (API Level 26) or higher.
-
-### Building from Source
+## 🚀 How to Run the Project
 
 1. **Clone the Repository**:
    ```bash
@@ -283,20 +246,20 @@ ColonPathAI/
    cd colonPath
    ```
 
-2. **Assemble Debug APK**:
-   ```bash
-   # On Windows PowerShell
+2. **Build the Debug APK (Windows PowerShell)**:
+   ```powershell
    $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
    .\gradlew.bat assembleDebug --no-daemon
    ```
 
-3. **Install on Connected Device**:
+3. **Install on Your Phone**:
    ```bash
    adb install -r app/build/outputs/apk/debug/app-debug.apk
    ```
 
 ---
 
-## ⚠️ Clinical & Research Disclaimer
+## ⚠️ Disclaimer
 
-> **IMPORTANT**: ColonPath-AI is currently a **research and technological prototype**. It is designed to demonstrate human-AI collaborative workflows in digital pathology. It is **not** certified as a medical device for primary diagnostic use. All computational metrics, segmentation masks, and AI summaries are for investigative purposes and must be verified by a licensed pathologist.
+> **RESEARCH PROTOTYPE NOTICE**:
+> ColonPath-AI is currently a technological and research prototype created for demonstration purposes. It is not approved as a medical device for primary diagnostic use. All sample outputs, similarity metrics, and AI summaries must be reviewed and confirmed by a certified medical pathologist.

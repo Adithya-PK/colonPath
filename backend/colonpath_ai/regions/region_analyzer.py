@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 import numpy as np
 from PIL import Image
 
-from foundation.digepath.inference import DigepathFeatureExtractor
+from foundation.phikon.inference import PhikonV2FeatureExtractor
 from classifiers.tissue_classifier import TissueClassifier
 from uncertainty.uncertainty_estimator import UncertaintyEstimator
 from .priority_ranking import PriorityRanker
@@ -45,14 +45,14 @@ class RegionAnalyzer:
 
     def __init__(
         self,
-        extractor: Optional[DigepathFeatureExtractor] = None,
+        extractor: Optional[PhikonV2FeatureExtractor] = None,
         classifier: Optional[TissueClassifier] = None,
         uncertainty_estimator: Optional[UncertaintyEstimator] = None,
         ranker: Optional[PriorityRanker] = None,
         grid_rows: int = 2,
         grid_cols: int = 2,
     ):
-        self.extractor = extractor or DigepathFeatureExtractor()
+        self.extractor = extractor or PhikonV2FeatureExtractor()
         self.classifier = classifier or TissueClassifier()
         self.uncertainty_estimator = uncertainty_estimator or UncertaintyEstimator()
         self.ranker = ranker or PriorityRanker()

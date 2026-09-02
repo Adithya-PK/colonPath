@@ -75,14 +75,34 @@ fun AnalysisProgressScreen(
         label = "pulse"
     )
 
+    var isExecuting by remember { mutableStateOf(false) }
+    var executionError by remember { mutableStateOf<String?>(null) }
+
     LaunchedEffect(Unit) {
-        for (i in stages.indices) {
-            currentStage = i
-            delay((200..320).random().toLong())
+        if (!isExecuting) {
+            isExecuting = true
+            executionError = null
+            
+            // Advance initial ingest steps
+            currentStage = 0
+            delay(150)
+            currentStage = 1
+            delay(150)
+            currentStage = 2
+
+            val result = com.example.colonpath_ai.data.ColonPathRepository.executeAnalysis(caseId)
+            if (result.isSuccess) {
+                for (i in 3..stages.size) {
+                    currentStage = i
+                    delay(80)
+                }
+                delay(100)
+                onComplete()
+            } else {
+                executionError = result.exceptionOrNull()?.message ?: "Analysis execution error"
+            }
+            isExecuting = false
         }
-        currentStage = stages.size
-        delay(250)
-        onComplete()
     }
 
     Surface(
@@ -318,14 +338,29 @@ fun AnalysisProgressScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Cancel Action Button
+            if (executionError != null) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    color = AmberLight.copy(alpha = 0.2f),
+                    border = BorderStroke(1.dp, RedError.copy(alpha = 0.5f))
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text("Analysis Execution Error", color = RedError, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(executionError ?: "Unknown error", color = TextPrimary, style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            }
+
+            // Cancel / Back Action Button
             OutlinedButton(
                 onClick = onBack,
                 shape = RoundedCornerShape(12.dp),
                 border = BorderStroke(1.dp, CardBorder),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Cancel Analysis", color = TextSecondary)
+                Text(if (executionError != null) "Go Back" else "Cancel Analysis", color = TextSecondary)
             }
         }
     }

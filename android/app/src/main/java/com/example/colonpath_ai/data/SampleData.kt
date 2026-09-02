@@ -1,6 +1,11 @@
 package com.example.colonpath_ai.data
 
+import android.graphics.Bitmap
+import android.net.Uri
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.example.colonpath_ai.model.*
 import android.content.Context
 import org.json.JSONArray
@@ -12,6 +17,15 @@ object SampleDataRepository {
     private const val FILE_NAME = "colonpath_cases.json"
 
     var activeCaseId: String? = null
+    var selectedImageUri by mutableStateOf<Uri?>(null)
+    var selectedBitmap by mutableStateOf<Bitmap?>(null)
+    var selectedImageName by mutableStateOf<String>("")
+
+    fun clearCurrentSelection() {
+        selectedImageUri = null
+        selectedBitmap = null
+        selectedImageName = ""
+    }
 
     val samplePatient = PatientInfo(
         patientId = "PT-2026-0847",
@@ -367,7 +381,16 @@ object SampleDataRepository {
 
     fun getAnalysisForCase(caseId: String): AnalysisResult {
         val foundCase = getCaseById(caseId) ?: sampleCase
-        return sampleAnalysisResult.copy(case = foundCase)
+        val currentImageInfo = if (selectedBitmap != null) {
+            sampleImageInfo.copy(
+                width = selectedBitmap!!.width,
+                height = selectedBitmap!!.height,
+                source = selectedImageName
+            )
+        } else {
+            sampleImageInfo
+        }
+        return sampleAnalysisResult.copy(case = foundCase, imageInfo = currentImageInfo)
     }
 
     fun getCaseById(caseId: String): Case? {

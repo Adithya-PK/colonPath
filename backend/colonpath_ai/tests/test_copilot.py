@@ -26,7 +26,7 @@ def test_copilot_all_pathologist_questions():
         ("What gland features were segmented by U-Net?", "Glandular Histomorphometry"),
         ("Why is the model uncertain and what is the entropy score?", "Model Reliability"),
         ("What is the model agreement and are there conflicts?", "Multi-Source Consensus"),
-        ("Which reference case is most similar?", "Reference Retrieval"),
+        ("What is the tissue grading and dysplasia criteria?", "Histological Criteria"),
         ("Which region should I review next?", "Next Region Recommendation"),
         ("What is the image quality and blur variance?", "Image Quality Assessment"),
         ("What clinical recommendations and limitations apply?", "Clinical Recommendations"),

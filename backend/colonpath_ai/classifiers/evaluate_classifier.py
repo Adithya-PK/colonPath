@@ -24,7 +24,7 @@ from sklearn.metrics import (
 import torch
 
 from fusion.fusion_model import TISSUE_CLASSES, NUM_CLASSES
-from foundation.digepath.inference import DigepathFeatureExtractor
+from foundation.phikon.inference import PhikonV2FeatureExtractor
 from .dataset import create_data_splits
 from .tissue_classifier import TissueClassifier
 
@@ -120,7 +120,7 @@ def evaluate_on_test_set(
     print("=" * 60)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    extractor = DigepathFeatureExtractor(device=device)
+    extractor = PhikonV2FeatureExtractor(device=device)
 
     # Load splits with exact fixed seed
     _, _, test_ds, normalizer = create_data_splits(

@@ -1,11 +1,16 @@
 package com.example.colonpath_ai.screens.casedetails
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import com.example.colonpath_ai.R
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Delete
@@ -31,6 +36,12 @@ fun CaseDetailsScreen(
     onViewReport: () -> Unit,
     onRetake: () -> Unit = {}
 ) {
+    LaunchedEffect(caseId) {
+        if (com.example.colonpath_ai.data.ColonPathRepository.activeCaseId != caseId) {
+            com.example.colonpath_ai.data.ColonPathRepository.loadCaseResult(caseId)
+        }
+    }
+
     val case = SampleDataRepository.getCaseById(caseId)
     var showDeleteDialog by remember { mutableStateOf(false) }
 
@@ -231,6 +242,57 @@ fun CaseDetailsScreen(
                                 Text(case.stain, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium), color = TextPrimary)
                             }
                         }
+                    }
+                }
+            }
+
+            // Section: Analyzed Specimen / HoVer-Net Overlay
+            item {
+                SectionHeader(
+                    title = "Analyzed Specimen Overlay",
+                    expandable = false,
+                    expanded = true,
+                    onToggle = {}
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+                    border = BorderStroke(1.dp, CardBorder)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(200.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            color = BackgroundLight
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.hovernet_overlay),
+                                    contentDescription = "HoVer-Net Analysis Result",
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .clip(RoundedCornerShape(8.dp)),
+                                    contentScale = ContentScale.Fit
+                                )
+                            }
+                        }
+                        Text(
+                            text = "HoVer-Net Instance Segmentation • Green=Boundaries, Red=Epithelial Centroids",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = TextSecondary
+                        )
                     }
                 }
             }

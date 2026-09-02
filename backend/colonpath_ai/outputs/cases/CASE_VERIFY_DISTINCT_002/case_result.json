@@ -1,0 +1,249 @@
+{
+  "case_id": "CASE_VERIFY_DISTINCT_002",
+  "timestamp": "2026-09-01T16:10:03.138936+00:00",
+  "status": "completed",
+  "image_quality": {
+    "passed": true,
+    "resolution": "256x256",
+    "blur_laplacian_variance": 1279.16,
+    "blur_status": "ACCEPTABLE",
+    "mean_brightness": 189.48,
+    "brightness_status": "ACCEPTABLE",
+    "contrast_std": 40.86,
+    "contrast_status": "ACCEPTABLE",
+    "mean_saturation": 56.61
+  },
+  "digepath": {
+    "model_name": "Digepath",
+    "architecture": "ViT-L/16",
+    "embedding_dimension": 1024,
+    "device": "cpu",
+    "status": "active"
+  },
+  "prediction": {
+    "class": "NORM",
+    "confidence": 0.8042,
+    "calibrated_confidence": 0.7117,
+    "tumor_probability": 0.0,
+    "binary_class": "NON-TUM",
+    "multiclass_probabilities": {
+      "ADI": 0.00786668062210083,
+      "BACK": 8.086151501629502e-05,
+      "DEB": 0.06304559856653214,
+      "LYM": 0.10422156006097794,
+      "MUC": 0.00027368211885914207,
+      "MUS": 0.0203106589615345,
+      "NORM": 0.8042009472846985,
+      "STR": 3.7518751737613754e-21,
+      "TUM": 5.580023422491198e-12
+    }
+  },
+  "uncertainty": {
+    "score": 0.4282,
+    "level": "MEDIUM",
+    "entropy": 0.9425,
+    "normalized_entropy": 0.4289,
+    "ood_score": 1.0,
+    "ood_status": "IN_DISTRIBUTION",
+    "is_ood": false,
+    "review_required": true,
+    "message": "Moderate model uncertainty. Pathologist review advised."
+  },
+  "model_agreement": {
+    "level": "MEDIUM",
+    "score": 0.5,
+    "concordant_sources": [
+      "Digepath Visual Classifier (NORM aligns with Fusion NORM)",
+      "Reference Comparison (Top match 'normal' supports prediction)"
+    ],
+    "discordant_sources": [
+      "Nuclear Morphology (Pleomorphism conflicts with non-tumor prediction)",
+      "Gland Morphology (Architectural distortion conflicts with non-tumor prediction)"
+    ],
+    "summary": "Moderate agreement: Partial alignment on NORM, with minor morphological or reference variance."
+  },
+  "nuclear_evidence": {
+    "total_count": 95,
+    "type_counts": {
+      "epithelial": 4,
+      "inflammatory": 0,
+      "spindle_shaped": 83,
+      "miscellaneous": 8
+    },
+    "mean_area_px2": 138.22,
+    "mean_perimeter_px": 49.52,
+    "mean_eccentricity": 0.738,
+    "mean_circularity": 0.69,
+    "interpretation": "Nuclear pleomorphism detected: 95 nuclei, high mean area (138.2 px\u00b2)."
+  },
+  "gland_evidence": {
+    "total_count": 13,
+    "mean_area_pixels": 1851.85,
+    "mean_perimeter_pixels": 197.24,
+    "mean_width_pixels": 48.77,
+    "mean_height_pixels": 52.31,
+    "mean_aspect_ratio": 1.502,
+    "mean_circularity": 0.541,
+    "interpretation": "Glandular architectural distortion: 13 glands, low circularity (0.54), high aspect ratio (1.50)."
+  },
+  "reference_comparison": {
+    "label": "REFERENCE-BASED INSIGHT",
+    "is_available": true,
+    "retrieval_engine": "Local In-Memory Vector Search Engine",
+    "active_database": "outputs/reference_cases",
+    "top_category": "normal",
+    "top_similarity_percent": 80.68,
+    "top_reference_id": "reference_001",
+    "insight": "Morphological profile demonstrates 80.7% feature similarity with curated 'normal' reference (reference_001).",
+    "comparisons": [
+      {
+        "reference_id": "reference_001",
+        "category": "normal",
+        "normalized_distance": 0.1932,
+        "similarity_percent": 80.68,
+        "key_concordant_features": [
+          "nuclei_total",
+          "nuclei_type_2",
+          "nuclei_type_3",
+          "nuclei_mean_eccentricity"
+        ]
+      },
+      {
+        "reference_id": "reference_001",
+        "category": "adenoma",
+        "normalized_distance": 0.2483,
+        "similarity_percent": 75.17,
+        "key_concordant_features": [
+          "nuclei_type_4",
+          "nuclei_mean_area_px2",
+          "nuclei_mean_perimeter_px",
+          "nuclei_mean_eccentricity"
+        ]
+      },
+      {
+        "reference_id": "reference_001",
+        "category": "adenocarcinoma",
+        "normalized_distance": 0.3053,
+        "similarity_percent": 69.47,
+        "key_concordant_features": [
+          "nuclei_type_3",
+          "nuclei_mean_area_px2",
+          "nuclei_mean_perimeter_px",
+          "nuclei_mean_eccentricity"
+        ]
+      }
+    ]
+  },
+  "priority_regions": [
+    {
+      "region_id": "R_01",
+      "index": 1,
+      "x": 0,
+      "y": 0,
+      "width": 128,
+      "height": 128,
+      "prediction": "DEB",
+      "confidence": 0.5986202359199524,
+      "tumor_probability": 1.238225757726459e-24,
+      "uncertainty_score": 0.5752571479573796,
+      "uncertainty_level": "HIGH",
+      "priority_score": 0.18228857219360695,
+      "priority_level": "LOW",
+      "priority_label": "AI-prioritized region",
+      "nuclei_count": 32,
+      "glands_count": 1,
+      "agreement_level": "HIGH",
+      "rationale": "Low AI priority with regular morphological patterns."
+    },
+    {
+      "region_id": "R_04",
+      "index": 4,
+      "x": 128,
+      "y": 128,
+      "width": 128,
+      "height": 128,
+      "prediction": "DEB",
+      "confidence": 0.5897804498672485,
+      "tumor_probability": 1.2264732093528633e-24,
+      "uncertainty_score": 0.5815288335012043,
+      "uncertainty_level": "HIGH",
+      "priority_score": 0.17722932502518063,
+      "priority_level": "LOW",
+      "priority_label": "AI-prioritized region",
+      "nuclei_count": 22,
+      "glands_count": 0,
+      "agreement_level": "HIGH",
+      "rationale": "Low AI priority with regular morphological patterns."
+    },
+    {
+      "region_id": "R_03",
+      "index": 3,
+      "x": 0,
+      "y": 128,
+      "width": 128,
+      "height": 128,
+      "prediction": "DEB",
+      "confidence": 0.590116024017334,
+      "tumor_probability": 1.2406748750143309e-24,
+      "uncertainty_score": 0.5813075155302774,
+      "uncertainty_level": "HIGH",
+      "priority_score": 0.16219612732954158,
+      "priority_level": "LOW",
+      "priority_label": "AI-prioritized region",
+      "nuclei_count": 21,
+      "glands_count": 0,
+      "agreement_level": "HIGH",
+      "rationale": "Low AI priority with regular morphological patterns."
+    },
+    {
+      "region_id": "R_02",
+      "index": 2,
+      "x": 128,
+      "y": 0,
+      "width": 128,
+      "height": 128,
+      "prediction": "DEB",
+      "confidence": 0.5900783538818359,
+      "tumor_probability": 1.2412903837356295e-24,
+      "uncertainty_score": 0.5813341766319626,
+      "uncertainty_level": "HIGH",
+      "priority_score": 0.15920012649479437,
+      "priority_level": "LOW",
+      "priority_label": "AI-prioritized region",
+      "nuclei_count": 20,
+      "glands_count": 0,
+      "agreement_level": "HIGH",
+      "rationale": "Low AI priority with regular morphological patterns."
+    }
+  ],
+  "model_performance_metadata": {
+    "evaluation_dataset": "NCT-CRC-HE-100K (45 held-out test patches)",
+    "multiclass_accuracy": 0.6444,
+    "multiclass_macro_f1": 0.5041,
+    "multiclass_macro_precision": 0.613,
+    "multiclass_macro_recall": 0.5046,
+    "binary_tumor_accuracy": 1.0,
+    "expected_calibration_error_ece": 0.157,
+    "brier_score": 0.4966,
+    "source": "results/metrics.json"
+  },
+  "visualizations": {
+    "original": "/cases/CASE_VERIFY_DISTINCT_002/visualization/original",
+    "glands": "/cases/CASE_VERIFY_DISTINCT_002/visualization/glands",
+    "nuclei": "/cases/CASE_VERIFY_DISTINCT_002/visualization/nuclei",
+    "regions": "/cases/CASE_VERIFY_DISTINCT_002/visualization/regions",
+    "uncertainty": "/cases/CASE_VERIFY_DISTINCT_002/visualization/uncertainty",
+    "top_regions": "/cases/CASE_VERIFY_DISTINCT_002/visualization/top_regions",
+    "pseudo_3d": "/cases/CASE_VERIFY_DISTINCT_002/visualization/pseudo_3d"
+  },
+  "limitations": [
+    "Research prototype for decision support; not an autonomous diagnostic device.",
+    "Pathologist review recommended for all clinical correlations and staging.",
+    "Visual and morphological features are AI-derived computational estimates."
+  ],
+  "explanation": {
+    "text": "AI-Assisted Classification: NORM (Calibrated Confidence: 0.71). High model uncertainty detected (Score: 0.43). Pathologist review is recommended to evaluate cellular features.",
+    "validated": true,
+    "validation_errors": []
+  }
+}

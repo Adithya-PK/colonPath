@@ -1,55 +1,79 @@
 """
 End-to-End Multimodal Analysis Orchestrator for COLONPATH-AI.
-Executes the unified AI-assisted decision-support pipeline sequentially.
+Executes the unified AI-assisted decision-support pipeline sequentially with
+deterministic lifecycle states, timing instrumentation, and reproducibility tracking.
 """
 
+import time
 import json
+import hashlib
 import logging
+from enum import Enum
 from pathlib import Path
 from typing import Optional, Union, Dict, Any
 import numpy as np
 import cv2
 from PIL import Image
 
-from foundation.digepath.inference import DigepathFeatureExtractor
+from foundation.phikon.inference import PhikonV2FeatureExtractor
 from fusion.feature_loader import FeatureLoader
 from fusion.feature_schema import MorphologyFeatureVector
 from classifiers.tissue_classifier import TissueClassifier
 from uncertainty.uncertainty_estimator import UncertaintyEstimator
 from agreement.agreement_engine import AgreementEngine
 from regions.region_analyzer import RegionAnalyzer
-from reference.reference_matcher import ReferenceMatcher
 from visualization.visualizer import CaseVisualizer
 from evidence.evidence_builder import EvidenceBuilder
 from evidence.explainer import EvidenceGroundedExplainer
 from agent.evidence_validator import EvidenceValidator
 from storage.case_repository import CaseRepository
+from api.exceptions import PipelineExecutionError
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s | [%(levelname)s] %(message)s")
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("colonpath_orchestrator")
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 OUTPUT_DIR = PROJECT_ROOT / "outputs"
 
 
+class CaseStage(str, Enum):
+    RECEIVED = "RECEIVED"
+    VALIDATING = "VALIDATING"
+    PREPROCESSING = "PREPROCESSING"
+    CV_PROCESSING = "CV_PROCESSING"
+    FEATURE_EXTRACTION = "FEATURE_EXTRACTION"
+    FUSION = "FUSION"
+    UNCERTAINTY = "UNCERTAINTY"
+    AGREEMENT = "AGREEMENT"
+    GENERATING_VISUALIZATIONS = "GENERATING_VISUALIZATIONS"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+
+
+def sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        while chunk := f.read(8192):
+            h.update(chunk)
+    return h.hexdigest()
+
+
 def evaluate_image_quality(image_path: Path) -> Dict[str, Any]:
-    """
-    Evaluates image quality metrics (blur, brightness, contrast, saturation).
-    """
+    """Evaluates optical image quality."""
     img = cv2.imread(str(image_path))
     if img is None:
-        return {"passed": False, "error": "Could not read image file"}
+        raise ValueError(f"Unable to read image at {image_path}")
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
     lap_var = float(cv2.Laplacian(gray, cv2.CV_64F).var())
     brightness = float(np.mean(gray))
     contrast = float(np.std(gray))
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
     saturation = float(np.mean(hsv[:, :, 1]))
 
-    blur_ok = lap_var >= 40.0
-    bright_ok = 40.0 <= brightness <= 230.0
-    contrast_ok = contrast >= 15.0
+    blur_ok = lap_var >= 50.0
+    bright_ok = 40.0 <= brightness <= 220.0
+    contrast_ok = contrast >= 25.0
 
     passed = blur_ok and bright_ok and contrast_ok
 
@@ -73,15 +97,14 @@ class CaseOrchestrator:
 
     def __init__(
         self,
-        extractor: Optional[DigepathFeatureExtractor] = None,
+        extractor: Optional[PhikonV2FeatureExtractor] = None,
         classifier: Optional[TissueClassifier] = None,
         uncertainty_estimator: Optional[UncertaintyEstimator] = None,
         region_analyzer: Optional[RegionAnalyzer] = None,
-        reference_matcher: Optional[ReferenceMatcher] = None,
         visualizer: Optional[CaseVisualizer] = None,
         repository: Optional[CaseRepository] = None,
     ):
-        self.extractor = extractor or DigepathFeatureExtractor()
+        self.extractor = extractor or PhikonV2FeatureExtractor()
         self.classifier = classifier or TissueClassifier()
         self.uncertainty_estimator = uncertainty_estimator or UncertaintyEstimator()
         self.region_analyzer = region_analyzer or RegionAnalyzer(
@@ -89,7 +112,6 @@ class CaseOrchestrator:
             classifier=self.classifier,
             uncertainty_estimator=self.uncertainty_estimator,
         )
-        self.reference_matcher = reference_matcher or ReferenceMatcher()
         self.visualizer = visualizer or CaseVisualizer()
         self.repository = repository or CaseRepository()
 
@@ -107,150 +129,160 @@ class CaseOrchestrator:
             raise FileNotFoundError(f"Image not found at {img_path}")
 
         cid = case_id or img_path.stem
-        logger.info(f"--- Running COLONPATH-AI Pipeline on Case: {cid} ---")
+        img_hash = sha256_file(img_path)
+        t_total_start = time.perf_counter()
+        durations: Dict[str, float] = {}
 
-        # 1. Quality Check
-        logger.info("Step 1/9: Image Quality Check")
-        img_quality = evaluate_image_quality(img_path)
+        logger.info(f"[STAGE: {CaseStage.RECEIVED.value}] Case: {cid} | Image: {img_path.name} (SHA256: {img_hash[:16]})")
 
-        # 2. Digepath Visual Embedding
-        logger.info("Step 2/9: Digepath GI Visual Embedding Extraction")
-        v_emb = self.extractor.extract(img_path, cache_key=f"digepath_{cid}")
+        current_stage = CaseStage.VALIDATING
+        try:
+            # 1. Quality Check & Validation
+            t0 = time.perf_counter()
+            logger.info(f"[STAGE: {CaseStage.VALIDATING.value}] Evaluating Optical Quality for {cid}")
+            img_quality = evaluate_image_quality(img_path)
+            durations[CaseStage.VALIDATING.value] = round((time.perf_counter() - t0) * 1000, 2)
 
-        # 3. Load / Derive Morphological Features
-        logger.info("Step 3/9: Morphological Integration")
-        if nuclei_csv or glands_csv:
-            morphology = FeatureLoader.from_measurements(cid, nuclei_csv=nuclei_csv, glands_csv=glands_csv)
-        else:
-            raise ValueError(f"No morphology measurements provided for case '{cid}'. Dynamic CV execution is required.")
+            # 2. Phikon-v2 Visual Embedding
+            current_stage = CaseStage.FEATURE_EXTRACTION
+            t0 = time.perf_counter()
+            logger.info(f"[STAGE: {CaseStage.FEATURE_EXTRACTION.value}] Extracting 1024D Foundation Embedding for {cid}")
+            v_emb = self.extractor.extract(img_path, cache_key=f"phikon_{cid}")
 
-        # 4. Multimodal Fusion & Classification
-        logger.info("Step 4/9: Multimodal Feature Fusion & Classification")
-        pred_res = self.classifier.predict(v_emb, morphology)
-        logits = pred_res["logits"]
+            # 3. Morphological Integration
+            if nuclei_csv or glands_csv:
+                morphology = FeatureLoader.from_measurements(cid, nuclei_csv=nuclei_csv, glands_csv=glands_csv)
+            else:
+                raise ValueError(f"No morphology measurements provided for case '{cid}'. Dynamic CV execution is required.")
+            durations[CaseStage.FEATURE_EXTRACTION.value] = round((time.perf_counter() - t0) * 1000, 2)
 
-        # 5. Uncertainty Estimation & Calibration
-        logger.info("Step 5/9: Uncertainty Estimation & Calibration")
-        unc_res = self.uncertainty_estimator.estimate(
-            logits=logits,
-            probabilities=np.array(list(pred_res["multiclass_probabilities"].values())),
-            image_quality_passed=img_quality["passed"],
-        )
+            # 4. Multimodal Fusion & Classification
+            current_stage = CaseStage.FUSION
+            t0 = time.perf_counter()
+            logger.info(f"[STAGE: {CaseStage.FUSION.value}] Multimodal Fusion Net Inference for {cid}")
+            pred_res = self.classifier.predict(v_emb, morphology)
+            logits = pred_res["logits"]
+            durations[CaseStage.FUSION.value] = round((time.perf_counter() - t0) * 1000, 2)
 
-        # 6. Reference Comparison
-        logger.info("Step 6/9: Reference Case Similarity Matching")
-        ref_res = self.reference_matcher.compare(morphology)
+            # 5. Uncertainty Estimation & Calibration
+            current_stage = CaseStage.UNCERTAINTY
+            t0 = time.perf_counter()
+            logger.info(f"[STAGE: {CaseStage.UNCERTAINTY.value}] Temperature Calibration & Entropy Estimation for {cid}")
+            unc_res = self.uncertainty_estimator.estimate(
+                logits=logits,
+                probabilities=np.array(list(pred_res["multiclass_probabilities"].values())),
+                image_quality_passed=img_quality["passed"],
+            )
+            durations[CaseStage.UNCERTAINTY.value] = round((time.perf_counter() - t0) * 1000, 2)
 
-        # 7. Model Agreement Analysis
-        logger.info("Step 7/9: Model & Multi-Source Agreement Analysis")
-        agr_res = AgreementEngine.evaluate(
-            fusion_prediction=pred_res["prediction"],
-            tumor_probability=pred_res["tumor_probability"],
-            morphology=morphology,
-            reference_top_class=ref_res.top_category,
-            digepath_prediction=pred_res["prediction"],
-        )
+            # 6. Multi-Source Agreement
+            current_stage = CaseStage.AGREEMENT
+            t0 = time.perf_counter()
+            logger.info(f"[STAGE: {CaseStage.AGREEMENT.value}] Multi-Source Consensus Evaluation for {cid}")
+            agr_res = AgreementEngine.evaluate(
+                fusion_prediction=pred_res["prediction"],
+                tumor_probability=pred_res["tumor_probability"],
+                morphology=morphology,
+                visual_prediction=pred_res["prediction"],
+            )
+            durations[CaseStage.AGREEMENT.value] = round((time.perf_counter() - t0) * 1000, 2)
 
-        # 8. Region-Level Analysis & Ranking
-        logger.info("Step 8/9: AI-Prioritized Region Analysis")
-        regions = self.region_analyzer.analyze_image(
-            img_path,
-            nuclei_csv=nuclei_csv,
-            glands_csv=glands_csv,
-        )
+            # 7. Region-Level Prioritization
+            t0 = time.perf_counter()
+            regions = self.region_analyzer.analyze_image(
+                img_path,
+                nuclei_csv=nuclei_csv,
+                glands_csv=glands_csv,
+            )
+            durations["REGION_ANALYSIS"] = round((time.perf_counter() - t0) * 1000, 2)
 
-        # 9. Visualizations, Evidence & Validation
-        logger.info("Step 9/9: Generating Visualizations & Synthesizing Evidence")
-        vis_paths = self.visualizer.render_all(
-            case_id=cid,
-            image_path=img_path,
-            regions=regions,
-            gland_mask_path=gland_mask_path,
-            nuclei_overlay_path=nuclei_overlay_path,
-            nuclei_csv=nuclei_csv,
-        )
+            # 8. Visualizations, Evidence & Validation
+            current_stage = CaseStage.GENERATING_VISUALIZATIONS
+            t0 = time.perf_counter()
+            logger.info(f"[STAGE: {CaseStage.GENERATING_VISUALIZATIONS.value}] Rendering Visualizations for {cid}")
+            vis_paths = self.visualizer.render_all(
+                case_id=cid,
+                image_path=img_path,
+                regions=regions,
+                gland_mask_path=gland_mask_path,
+                nuclei_overlay_path=nuclei_overlay_path,
+                nuclei_csv=nuclei_csv,
+            )
+            durations[CaseStage.GENERATING_VISUALIZATIONS.value] = round((time.perf_counter() - t0) * 1000, 2)
 
-        # Build full case_result
-        case_result = EvidenceBuilder.build_case_result(
-            case_id=cid,
-            image_quality=img_quality,
-            digepath_meta=self.extractor.metadata,
-            prediction_result=pred_res,
-            uncertainty=unc_res,
-            model_agreement=agr_res,
-            morphology=morphology,
-            reference_result=ref_res,
-            priority_regions=regions,
-            visualizations=vis_paths,
-        )
+            durations["TOTAL_PIPELINE_MS"] = round((time.perf_counter() - t_total_start) * 1000, 2)
 
-        # Build & validate explanation
-        explanation = EvidenceGroundedExplainer.generate_explanation(case_result)
-        val_res = EvidenceValidator.validate(explanation, case_result)
-        case_result["explanation"] = {
-            "text": explanation,
-            "validated": val_res.is_valid,
-            "validation_errors": val_res.errors,
-        }
+            # Build full case_result
+            case_result = EvidenceBuilder.build_case_result(
+                case_id=cid,
+                image_quality=img_quality,
+                digepath_meta=self.extractor.metadata,
+                prediction_result=pred_res,
+                uncertainty=unc_res,
+                model_agreement=agr_res,
+                morphology=morphology,
+                priority_regions=regions,
+                visualizations=vis_paths,
+            )
 
-        # Save to disk: case_result.json and evidence.json
-        case_out_dir = OUTPUT_DIR / "cases" / cid
-        case_out_dir.mkdir(parents=True, exist_ok=True)
+            # Add Phase 5 Observability, State, Timing & Reproducibility Metadata
+            case_result["lifecycle_state"] = CaseStage.COMPLETED.value
+            case_result["stage_durations_ms"] = durations
+            case_result["reproducibility"] = {
+                "pipeline_version": "2.0.0",
+                "input_image_sha256": img_hash,
+                "input_image_name": img_path.name,
+                "models": {
+                    "unet": "31.4M params (ResNet34 backbone, Warwick QU Dataset)",
+                    "hovernet": "37.2M params (PanNuke/CoNIC checkpoint)",
+                    "foundation": "303.35M params (DINOv2 ViT-L/16, owkin/phikon-v2, 1024D, Pretrained on 40M+ tiles)",
+                    "fusion": "131.2K params (MultimodalFusionNet, 1024D+16D -> 128D)",
+                },
+                "temperature_scaling_factor": 1.25,
+                "timestamp_utc": case_result.get("timestamp"),
+            }
 
-        res_path = case_out_dir / "case_result.json"
-        with open(res_path, "w", encoding="utf-8") as f:
-            json.dump(case_result, f, indent=2)
+            # Build & validate explanation and claims
+            explanation = EvidenceGroundedExplainer.generate_explanation(case_result)
+            claims = EvidenceGroundedExplainer.generate_claims(case_result)
+            val_res = EvidenceValidator.validate(explanation, case_result)
+            case_result["explanation"] = {
+                "text": explanation,
+                "claims": claims,
+                "validated": val_res.is_valid,
+                "validation_errors": val_res.errors,
+            }
 
-        ev_path = case_out_dir / "evidence.json"
-        evidence_json = EvidenceBuilder.build_evidence_json(case_result)
-        with open(ev_path, "w", encoding="utf-8") as f:
-            json.dump(evidence_json, f, indent=2)
+            # Save to disk: case_result.json and evidence.json
+            case_out_dir = OUTPUT_DIR / "cases" / cid
+            case_out_dir.mkdir(parents=True, exist_ok=True)
 
-        # Persist to SQLite
-        self.repository.save_case(
-            case_id=cid,
-            case_result=case_result,
-            result_json_path=res_path,
-            evidence_json_path=ev_path,
-            image_path=img_path,
-        )
+            res_path = case_out_dir / "case_result.json"
+            with open(res_path, "w", encoding="utf-8") as f:
+                json.dump(case_result, f, indent=2)
 
-        logger.info(f"✓ Pipeline execution completed for case {cid}.")
-        return case_result
+            ev_path = case_out_dir / "evidence.json"
+            evidence_json = EvidenceBuilder.build_evidence_json(case_result)
+            with open(ev_path, "w", encoding="utf-8") as f:
+                json.dump(evidence_json, f, indent=2)
 
+            # Persist to SQLite
+            self.repository.save_case(
+                case_id=cid,
+                case_result=case_result,
+                result_json_path=res_path,
+                evidence_json_path=ev_path,
+                image_path=img_path,
+            )
 
-def main():
-    import argparse
-    parser = argparse.ArgumentParser(description="COLONPATH-AI Master Case Pipeline")
-    parser.add_argument("--image", default="outputs/hovernet_test/input/00000.png", help="H&E Image path")
-    parser.add_argument("--case_id", default="CASE_DEMO_001", help="Case ID")
-    parser.add_argument("--nuclei_csv", default="outputs/morphology/nuclei_measurements.csv")
-    parser.add_argument("--glands_csv", default="outputs/morphology/gland_measurements.csv")
-    parser.add_argument("--gland_mask", default="outputs/unet/testA_1_prediction.png")
-    parser.add_argument("--nuclei_overlay", default="outputs/hovernet_test/result/overlay/00000.png")
-    args = parser.parse_args()
+            logger.info(f"[STAGE: {CaseStage.COMPLETED.value}] Case {cid} successfully processed in {durations['TOTAL_PIPELINE_MS']} ms.")
+            return case_result
 
-    orchestrator = CaseOrchestrator()
-    result = orchestrator.run(
-        image_path=args.image,
-        case_id=args.case_id,
-        nuclei_csv=args.nuclei_csv,
-        glands_csv=args.glands_csv,
-        gland_mask_path=args.gland_mask,
-        nuclei_overlay_path=args.nuclei_overlay,
-    )
-
-    print("\n" + "=" * 60)
-    print("COLONPATH-AI ANALYSIS RESULT")
-    print("=" * 60)
-    print(f"Case ID:        {result['case_id']}")
-    print(f"Prediction:     {result['prediction']['class']} (Confidence: {result['prediction']['confidence']:.2f})")
-    print(f"Uncertainty:    {result['uncertainty']['level']} (Score: {result['uncertainty']['score']:.2f})")
-    print(f"Agreement:      {result['model_agreement']['level']}")
-    print(f"Top Reference:  {result['reference_comparison']['top_category']} ({result['reference_comparison']['top_similarity_percent']:.1f}%)")
-    print(f"Prioritized Regions: {len(result['priority_regions'])}")
-    print(f"\nExplanation:\n{result['explanation']['text']}")
-
-
-if __name__ == "__main__":
-    main()
+        except Exception as e:
+            logger.error(f"[STAGE: {CaseStage.FAILED.value}] Pipeline failed at stage '{current_stage.value}' for case '{cid}': {str(e)}")
+            raise PipelineExecutionError(
+                message=str(e),
+                case_id=cid,
+                stage=current_stage.value,
+                retryable=True,
+            )
