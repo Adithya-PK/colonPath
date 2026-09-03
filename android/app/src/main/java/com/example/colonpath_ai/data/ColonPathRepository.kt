@@ -117,6 +117,21 @@ object ColonPathRepository {
             } else {
                 casesList.add(0, dto)
             }
+            // Auto-persist to Case History
+            val dateStr = java.text.SimpleDateFormat("dd MMM yyyy", java.util.Locale.getDefault()).format(java.util.Date())
+            val autoCase = com.example.colonpath_ai.model.Case(
+                caseId = dto.case_id,
+                patient = com.example.colonpath_ai.model.PatientInfo(
+                    patientId = "PT-${dto.case_id.takeLast(4)}",
+                    patientName = "Specimen ${dto.case_id.takeLast(4)}"
+                ),
+                tissue = "Colorectal",
+                sampleType = "Biopsy",
+                stain = "H&E",
+                analysisDate = dateStr,
+                status = com.example.colonpath_ai.model.CaseStatus.PENDING_REVIEW
+            )
+            com.example.colonpath_ai.data.SampleDataRepository.addCase(autoCase)
         }.onFailure { err ->
             currentAnalysisState = AnalysisState.ERROR
             activeCaseStage = "FAILED"

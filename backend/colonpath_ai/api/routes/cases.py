@@ -72,6 +72,8 @@ def get_case_visualization(case_id: str, vis_type: str):
         config.output_dir / "visualizations" / cid / f"{vtype}.png",
         config.cases_dir / cid / "cv" / "unet" / "gland_mask.png" if vtype == "glands" else None,
         config.cases_dir / cid / "cv" / "hovernet" / "nuclei_overlay.png" if vtype == "nuclei" else None,
+        config.cases_dir / cid / "specimen.png" if vtype == "original" else None,
+        config.cases_dir / cid / "original.png" if vtype == "original" else None,
         config.cases_dir / cid / f"{vtype}.png",
     ]
 
@@ -79,10 +81,23 @@ def get_case_visualization(case_id: str, vis_type: str):
         if cand and cand.exists():
             return FileResponse(str(cand), media_type="image/png")
 
+    # 1b. Check case meta image_path for original
+    if vtype == "original":
+        meta = case_service.get_case_meta(cid)
+        if meta and meta.get("image_path"):
+            imp = Path(meta["image_path"])
+            if imp.exists():
+                return FileResponse(str(imp), media_type="image/png")
+
     # 2. For sample/demo cases without dedicated directory, fallback to available visualizations
     sample_cands = list(config.output_dir.glob(f"visualizations/*/{vtype}.png")) + list(config.cases_dir.glob(f"*/visualizations/{vtype}.png"))
     if sample_cands:
         return FileResponse(str(sample_cands[-1]), media_type="image/png")
+
+    if vtype == "original":
+        orig_cands = list(config.cases_dir.glob("*/specimen.png")) + list(config.cases_dir.glob("*/visualizations/original.png"))
+        if orig_cands:
+            return FileResponse(str(orig_cands[-1]), media_type="image/png")
 
     if vtype == "nuclei":
         nuc_cands = list(config.cases_dir.glob("*/cv/hovernet/nuclei_overlay.png"))
