@@ -24,6 +24,24 @@ object ColonPathApiClient {
         ).distinct()
     }
 
+    private fun findActiveHost(): String {
+        for (host in getCandidateHosts()) {
+            try {
+                val url = URL("${host.trimEnd('/')}/health")
+                val conn = (url.openConnection() as HttpURLConnection).apply {
+                    requestMethod = "GET"
+                    connectTimeout = 400
+                    readTimeout = 400
+                }
+                if (conn.responseCode == HttpURLConnection.HTTP_OK) {
+                    baseUrl = host
+                    return host
+                }
+            } catch (ignored: Exception) {}
+        }
+        return baseUrl
+    }
+
     /**
      * Uploads an H&E image and executes the full dynamic CV + multimodal pipeline on FastAPI backend.
      */
@@ -33,8 +51,10 @@ object ColonPathApiClient {
         fileName: String = "specimen.png"
     ): Result<CaseResultDto> = withContext(Dispatchers.IO) {
         var lastException: Exception? = null
+        val activeHost = findActiveHost()
+        val hostsToTry = listOf(activeHost).plus(getCandidateHosts()).distinct()
 
-        for (host in getCandidateHosts()) {
+        for (host in hostsToTry) {
             try {
                 val boundary = "Boundary-" + UUID.randomUUID().toString()
                 val url = URL("${host.trimEnd('/')}/analyze")
@@ -43,8 +63,8 @@ object ColonPathApiClient {
                     doInput = true
                     doOutput = true
                     useCaches = false
-                    connectTimeout = 4000
-                    readTimeout = 300000
+                    connectTimeout = 3000
+                    readTimeout = 90000
                     setRequestProperty("Content-Type", "multipart/form-data; boundary=$boundary")
                     setRequestProperty("Accept", "application/json")
                     setRequestProperty("Connection", "Keep-Alive")
