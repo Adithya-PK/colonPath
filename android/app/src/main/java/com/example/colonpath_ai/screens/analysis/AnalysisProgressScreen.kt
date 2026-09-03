@@ -88,23 +88,30 @@ fun AnalysisProgressScreen(
             currentStage = 0
             elapsedSeconds = 0
 
+            // Stage 0 -> 1 -> 2 in first 2 seconds, then stays at Stage 2 (Nuclear Segmentation) during live computation
+            val stageAdvancer = launch {
+                delay(800)
+                currentStage = 1
+                delay(1000)
+                currentStage = 2
+            }
+
             val tickerJob = launch {
                 while (isActive) {
                     delay(1000)
                     elapsedSeconds++
-                    if (currentStage < 7 && elapsedSeconds % 4 == 0) {
-                        currentStage = (currentStage + 1).coerceAtMost(7)
-                    }
                 }
             }
 
             val result = com.example.colonpath_ai.data.ColonPathRepository.executeAnalysis(caseId)
+            stageAdvancer.cancel()
             tickerJob.cancel()
 
             if (result.isSuccess) {
+                // Rapidly sweep through remaining stages (3..8) to 100% on success
                 for (i in (currentStage + 1)..stages.size) {
                     currentStage = i
-                    delay(70)
+                    delay(60)
                 }
                 delay(120)
                 onComplete()
@@ -162,25 +169,24 @@ fun AnalysisProgressScreen(
                 )
 
                 Text(
-                    text = if (isExecuting) "Deep neural inference in progress • ${elapsedSeconds}s elapsed" else "Executing neural morphology extraction and reference matching",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
+                    text = "⏱️ Deep neural inference in progress • ${elapsedSeconds}s elapsed",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = Blue500,
+                    fontWeight = FontWeight.Medium
                 )
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Overall Progress Summary Card
-            Card(
+            // Progress Bar Card
+            Surface(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = SurfaceWhite),
+                color = SurfaceWhite,
                 border = BorderStroke(1.dp, CardBorder)
             ) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(18.dp),
+                    modifier = Modifier.padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     Row(
@@ -189,51 +195,32 @@ fun AnalysisProgressScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = if (currentStage < stages.size) "Step ${currentStage + 1} of ${stages.size}" else "Pipeline Complete",
-                            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                            text = "Analysis Pipeline Progress",
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
                             color = TextPrimary
                         )
                         Text(
                             text = "${(animatedProgress * 100).toInt()}%",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                             color = Blue500
                         )
                     }
 
-                    // Polished Gradient Progress Bar
-                    Box(
+                    LinearProgressIndicator(
+                        progress = { animatedProgress },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(8.dp)
-                            .clip(CircleShape)
-                            .background(BackgroundLight)
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth(fraction = animatedProgress)
-                                .height(8.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    Brush.horizontalGradient(
-                                        colors = listOf(Blue500, Navy800)
-                                    )
-                                )
-                        )
-                    }
-
-                    val activeDesc = if (currentStage < stages.size) stages[currentStage].description else "Compiling results..."
-                    Text(
-                        text = activeDesc,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = TextSecondary,
-                        maxLines = 1
+                            .clip(RoundedCornerShape(4.dp)),
+                        color = Blue500,
+                        trackColor = Blue50
                     )
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Scrollable Stages List
+            // Stages List
             LazyColumn(
                 modifier = Modifier
                     .weight(1f)
@@ -242,83 +229,74 @@ fun AnalysisProgressScreen(
             ) {
                 items(stages.size) { index ->
                     val stage = stages[index]
-                    val isDone = index < currentStage
+                    val isPassed = index < currentStage
                     val isCurrent = index == currentStage
 
-                    val cardBg by animateColorAsState(
+                    val backgroundColor by animateColorAsState(
                         targetValue = when {
-                            isCurrent -> Blue50.copy(alpha = 0.5f)
-                            isDone -> SurfaceWhite
-                            else -> SurfaceWhite.copy(alpha = 0.6f)
+                            isPassed -> GreenSuccess.copy(alpha = 0.05f)
+                            isCurrent -> Blue50
+                            else -> SurfaceWhite
                         },
+                        animationSpec = tween(300),
                         label = "cardBg"
                     )
 
                     val borderColor by animateColorAsState(
                         targetValue = when {
+                            isPassed -> GreenSuccess.copy(alpha = 0.3f)
                             isCurrent -> Blue500.copy(alpha = 0.4f)
-                            isDone -> GreenSuccess.copy(alpha = 0.3f)
-                            else -> CardBorder.copy(alpha = 0.4f)
+                            else -> CardBorder
                         },
-                        label = "borderBg"
+                        animationSpec = tween(300),
+                        label = "cardBorder"
                     )
 
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
-                        color = cardBg,
+                        color = backgroundColor,
                         border = BorderStroke(1.dp, borderColor)
                     ) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(horizontal = 14.dp, vertical = 12.dp),
+                                .padding(12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            // Step Indicator Icon / Loader
+                            // Step Number / Check Circle
                             Box(
-                                modifier = Modifier.size(28.dp),
+                                modifier = Modifier
+                                    .size(28.dp)
+                                    .then(if (isCurrent) Modifier.scale(pulseScale) else Modifier)
+                                    .clip(CircleShape)
+                                    .background(
+                                        when {
+                                            isPassed -> GreenSuccess
+                                            isCurrent -> Blue500
+                                            else -> CardBorder
+                                        }
+                                    ),
                                 contentAlignment = Alignment.Center
                             ) {
-                                when {
-                                    isDone -> {
-                                        Surface(
-                                            shape = CircleShape,
-                                            color = GreenSuccess.copy(alpha = 0.15f),
-                                            modifier = Modifier.fillMaxSize()
-                                        ) {
-                                            Box(contentAlignment = Alignment.Center) {
-                                                Icon(
-                                                    imageVector = Icons.Default.Check,
-                                                    contentDescription = "Completed",
-                                                    tint = GreenSuccess,
-                                                    modifier = Modifier.size(16.dp)
-                                                )
-                                            }
-                                        }
-                                    }
-                                    isCurrent -> {
-                                        CircularProgressIndicator(
-                                            modifier = Modifier
-                                                .fillMaxSize()
-                                                .scale(pulseScale),
-                                            color = Blue500,
-                                            strokeWidth = 2.5.dp,
-                                            trackColor = Blue50
-                                        )
-                                    }
-                                    else -> {
-                                        Surface(
-                                            shape = CircleShape,
-                                            color = BackgroundLight,
-                                            border = BorderStroke(1.dp, CardBorder),
-                                            modifier = Modifier.size(18.dp)
-                                        ) {}
-                                    }
+                                if (isPassed) {
+                                    Icon(
+                                        imageVector = Icons.Default.Check,
+                                        contentDescription = "Completed",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                } else {
+                                    Text(
+                                        text = "${index + 1}",
+                                        color = if (isCurrent) Color.White else TextTertiary,
+                                        style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                                        fontSize = 11.sp
+                                    )
                                 }
                             }
 
-                            Spacer(modifier = Modifier.width(14.dp))
+                            Spacer(modifier = Modifier.width(12.dp))
 
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
@@ -326,51 +304,46 @@ fun AnalysisProgressScreen(
                                     style = MaterialTheme.typography.bodyMedium.copy(
                                         fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Medium
                                     ),
-                                    color = when {
-                                        isCurrent -> Blue500
-                                        isDone -> TextPrimary
-                                        else -> TextSecondary.copy(alpha = 0.6f)
-                                    }
+                                    color = if (isCurrent) Blue500 else TextPrimary
                                 )
-                                if (isCurrent) {
-                                    Text(
-                                        text = stage.description,
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = TextSecondary,
-                                        lineHeight = 14.sp
-                                    )
-                                }
+                                Text(
+                                    text = stage.description,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = TextSecondary,
+                                    maxLines = 1
+                                )
                             }
                         }
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
+            // Error Display if any
             if (executionError != null) {
+                Spacer(modifier = Modifier.height(8.dp))
                 Surface(
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    color = AmberLight.copy(alpha = 0.2f),
-                    border = BorderStroke(1.dp, RedError.copy(alpha = 0.5f))
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp),
+                    color = RedError.copy(alpha = 0.1f),
+                    border = BorderStroke(1.dp, RedError.copy(alpha = 0.3f))
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
-                        Text("Analysis Execution Error", color = RedError, fontWeight = FontWeight.Bold, style = MaterialTheme.typography.bodyMedium)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(executionError ?: "Unknown error", color = TextPrimary, style = MaterialTheme.typography.bodySmall)
+                        Text(
+                            text = "Analysis Error: $executionError",
+                            color = RedError,
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Button(
+                            onClick = onBack,
+                            colors = ButtonDefaults.buttonColors(containerColor = RedError),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Go Back")
+                        }
                     }
                 }
-            }
-
-            // Cancel / Back Action Button
-            OutlinedButton(
-                onClick = onBack,
-                shape = RoundedCornerShape(12.dp),
-                border = BorderStroke(1.dp, CardBorder),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(if (executionError != null) "Go Back" else "Cancel Analysis", color = TextSecondary)
             }
         }
     }
