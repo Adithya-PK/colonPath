@@ -198,6 +198,110 @@ PREC.  │ 97.5%  96.0%  93.0%  95.0%  93.4%  90.6%   │ OVERALL ACC: 94.25%
 
 ---
 
+
+---
+
+## 6. Agentic AI Multi-Agent Architecture & Clinical Workflow
+
+ColonPath-AI V3 is fundamentally an **Autonomous Hierarchical Multi-Agent Clinical Decision-Support System**, not a static single-model feedforward script.
+
+### 🤖 The 5 Autonomous Specialized Agents
+
+```
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                         COLONPATH-AI MULTI-AGENT SYSTEM                          │
+└────────────────────────────────────────┬─────────────────────────────────────────┘
+                                         │
+                 ┌───────────────────────┴───────────────────────┐
+                 ▼                                               ▼
+     ┌───────────────────────────┐                   ┌───────────────────────────┐
+     │ AGENT 1: PERCEPTION GATE  │                   │  AGENT 2: CV MORPHOMETRY  │
+     │     (OpticalQCAgent)      │                   │  (MorphologyVisionAgent)  │
+     │ • Blur / Focus Check      │                   │ • HoVer-Net Cell Analysis │
+     │ • Brightness / Contrast   │                   │ • U-Net Gland Boundary    │
+     │ • Rejection Gatekeeper    │                   │ • 16-D Feature Vector     │
+     └─────────────┬─────────────┘                   └─────────────┬─────────────┘
+                   │ Passed                                        │
+                   └───────────────────────┬───────────────────────┘
+                                           ▼
+                             ┌───────────────────────────┐
+                             │ AGENT 3: CONSENSUS FUSION │
+                             │  (ConsensusFusionAgent)   │
+                             │ • Phikon-v2 ViT Embedding │
+                             │ • MultimodalFusionNet     │
+                             │ • Temperature Scaling     │
+                             │ • Shannon Uncertainty Gate│
+                             └─────────────┬─────────────┘
+                                           │
+                 ┌─────────────────────────┴─────────────────────────┐
+                 ▼                                                   ▼
+     ┌───────────────────────────┐                       ┌───────────────────────────┐
+     │  AGENT 4: SPATIAL TRIAGE  │                       │ AGENT 5: CLINICAL COPILOT │
+     │   (SpatialTriageAgent)    │                       │ (PathologistCopilotAgent) │
+     │ • 2x2 Focus Grid (R01-R04)│                       │ • MedGemma 1.5 4B IT LLM  │
+     │ • Crowding Prioritization │                       │ • EvidenceValidator AST   │
+     │ • Triage Queue Execution  │                       │ • Factual Grounding       │
+     └───────────────────────────┘                       └───────────────────────────┘
+```
+
+1. **`OpticalQCAgent` (Perception Gatekeeper):** Autonomously inspects Laplacian blur variance ($\sigma^2 \ge 50$), brightness ($40\dots220$), and contrast ($\ge 25$). Aborts pipeline execution and prompts slide refocusing if image quality is insufficient for diagnosis.
+2. **`MorphologyVisionAgent` (CV Perception):** Slices overlapping patches, predicts horizontal/vertical distance gradients via HoVer-Net, segments gland boundaries via U-Net, and synthesizes the exact 16-D Histomorphometry feature vector.
+3. **`ConsensusFusionAgent` (Cognitive Reasoning & Reflection):** Fuses 1024D visual foundation tokens with 16D cell morphology, calculates calibrated probabilities ($T=2.20$), and triggers epistemic abstention whenever Shannon entropy $H(p) \ge 0.45$.
+4. **`SpatialTriageAgent` (Spatial Prioritization):** Subdivides the specimen into 4 quadrants ($R_{01} \dots R_{04}$) and orders them by highest malignant probability and nuclear density to direct pathologist attention.
+5. **`PathologistCopilotAgent` (Grounded Medical Language):** Interactive clinical consultant powered by Google MedGemma 1.5 4B IT, guarded by a deterministic `EvidenceValidator` AST parser to prevent numerical hallucinations.
+
+### 🔄 End-to-End Multi-Agent OODA Sequence (Observe $\to$ Orient $\to$ Decide $\to$ Act)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Pathologist / Histotechnician
+    participant App as Android Mobile Client
+    participant QC as Agent 1: Optical QC
+    participant CV as Agent 2: CV Morphometry
+    participant Fuse as Agent 3: Consensus Fusion
+    participant Triage as Agent 4: Spatial Triage
+    participant LLM as Agent 5: MedGemma Copilot
+    participant Guard as EvidenceValidator AST
+
+    User->>App: Capture / Select H&E Slide
+    App->>QC: Submit Image Payload
+    QC->>QC: Observe: Calculate Laplacian & Contrast
+    alt QC Check Failed (Blurry / Poor Contrast)
+        QC-->>App: Halt & Reject (Alert: HIGH_BLUR)
+        App-->>User: Prompt to Refocus Optical Microscope
+    else QC Check Passed
+        QC->>CV: Dispatch Verified Image
+        par Parallel Tool Execution
+            CV->>CV: Tool 1: HoVer-Net Nuclear Distance Tensors
+            CV->>CV: Tool 2: U-Net Gland Segmentation
+            CV->>CV: Tool 3: 16-D Feature Synthesis
+        end
+        CV->>Fuse: Send 16-D Morphology + Image
+        Fuse->>Fuse: Tool 4: Phikon-v2 ViT (1024-D Tokens)
+        Fuse->>Fuse: Tool 5: MultimodalFusionNet (Late Fusion)
+        Fuse->>Fuse: Self-Reflect: Apply T=2.20 & Calculate Entropy H(p)
+        Fuse->>Triage: Send Probability & Spatial Masks
+        Triage->>Triage: Rank Quadrants R01-R04 by Cancer Risk
+        Triage-->>App: Stream 6-Class Probs, Overlays & Triage Queue
+        App-->>User: Display Interactive Results & Overlays
+        
+        opt Pathologist Queries AI Copilot
+            User->>App: "Explain gland architecture and cancer likelihood"
+            App->>LLM: Query MedGemma with Case Context
+            LLM->>Guard: Submit Draft Clinical Response
+            Guard->>Guard: Verify Numbers Against JSON Evidence
+            Guard-->>App: Return Validated Grounded Response
+            App-->>User: Display Certified Copilot Explanation
+        end
+        
+        App->>App: Native On-Device A4 PDF Compilation
+        App-->>User: Export Printable Clinical Report
+    end
+```
+
+For complete architectural details, see [AGENTIC_AI_ARCHITECTURE_AND_WORKFLOW.md](AGENTIC_AI_ARCHITECTURE_AND_WORKFLOW.md).
+
 ## 7. Latency Breakdown & Computational Justification
 
 Why does inference take ~34 seconds on CPU versus <1.2 seconds on GPU?
