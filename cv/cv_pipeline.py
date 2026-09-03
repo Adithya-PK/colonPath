@@ -203,31 +203,17 @@ def run_gland_morphometry(binary_mask: np.ndarray, output_csv_path: Path, min_ar
     }
 
 
-def run_hovernet_segmentation(
-    image_path: Path,
-    case_id: str,
-    output_json_path: Path,
-    output_overlay_path: Path
-) -> Dict[str, Any]:
-    """
-    Runs HoVer-Net nuclear instance segmentation and classification live on input image.
-    """
-    if not HOVERNET_CHECKPOINT.exists():
-        raise FileNotFoundError(f"HoVer-Net checkpoint not found at: {HOVERNET_CHECKPOINT}")
+_HOVERNET_INFER_MANAGER = None
 
-    # Local inference execution via hovernet InferManager
-    try:
+
+def get_hovernet_infer_manager():
+    global _HOVERNET_INFER_MANAGER
+    if _HOVERNET_INFER_MANAGER is None:
         import sys
         hover_dir_str = str(CV_DIR / "hovernet_reference")
         if hover_dir_str not in sys.path:
             sys.path.insert(0, hover_dir_str)
         from hovernet_reference.infer.tile import InferManager
-        import tempfile
-        import shutil
-
-        temp_in = Path(tempfile.mkdtemp())
-        temp_out = Path(tempfile.mkdtemp())
-        shutil.copyfile(image_path, temp_in / f"{case_id}.png")
 
         method_args = {
             "method": {
@@ -236,21 +222,64 @@ def run_hovernet_segmentation(
             },
             "type_info_path": str(CV_DIR / "hovernet_reference" / "consep_type_info.json"),
         }
+        _HOVERNET_INFER_MANAGER = InferManager(**method_args)
+    return _HOVERNET_INFER_MANAGER
+
+
+def run_hovernet_segmentation(
+    image_path: Path,
+    case_id: str,
+    output_json_path: Path,
+    output_overlay_path: Path
+) -> Dict[str, Any]:
+    """
+    Runs HoVer-Net nuclear instance segmentation and classification live on input image.
+    Optimized for high-throughput live multi-core CPU execution.
+    """
+    if not HOVERNET_CHECKPOINT.exists():
+        raise FileNotFoundError(f"HoVer-Net checkpoint not found at: {HOVERNET_CHECKPOINT}")
+
+    try:
+        import torch
+        import tempfile
+        import shutil
+
+        # Set optimal CPU thread count
+        try:
+            num_threads = min(8, max(4, os.cpu_count() or 4))
+            torch.set_num_threads(num_threads)
+        except Exception:
+            pass
+
+        temp_in = Path(tempfile.mkdtemp())
+        temp_out = Path(tempfile.mkdtemp())
+
+        # Resize oversized images to standard tile resolution (max 768px) for snappy 10-15s CPU analysis
+        img = cv2.imread(str(image_path))
+        if img is not None:
+            h, w = img.shape[:2]
+            if max(h, w) > 800:
+                scale = 768.0 / max(h, w)
+                img = cv2.resize(img, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
+            cv2.imwrite(str(temp_in / f"{case_id}.png"), img)
+        else:
+            shutil.copyfile(image_path, temp_in / f"{case_id}.png")
+
         run_args = {
-            "batch_size": 4,
+            "batch_size": 8,
             "nr_inference_workers": 0,
             "nr_post_proc_workers": 0,
             "patch_input_shape": 270,
             "patch_output_shape": 80,
             "input_dir": str(temp_in),
             "output_dir": str(temp_out),
-            "mem_usage": 0.2,
+            "mem_usage": 0.3,
             "draw_dot": True,
             "save_qupath": False,
             "save_raw_map": False,
         }
 
-        infer = InferManager(**method_args)
+        infer = get_hovernet_infer_manager()
         infer.process_file_list(run_args)
 
         gen_json = temp_out / "json" / f"{case_id}.json"
