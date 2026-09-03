@@ -18,6 +18,7 @@ object ColonPathApiClient {
         return listOf(
             baseUrl,
             "http://127.0.0.1:8000",
+            "http://172.31.99.171:8000",
             "http://192.168.1.7:8000",
             "http://10.0.2.2:8000"
         ).distinct()
@@ -42,7 +43,7 @@ object ColonPathApiClient {
                     doInput = true
                     doOutput = true
                     useCaches = false
-                    connectTimeout = 30000
+                    connectTimeout = 4000
                     readTimeout = 300000
                     setRequestProperty("Content-Type", "multipart/form-data; boundary=$boundary")
                     setRequestProperty("Accept", "application/json")
@@ -128,7 +129,7 @@ object ColonPathApiClient {
                 requestMethod = "POST"
                 doInput = true
                 doOutput = true
-                connectTimeout = 30000
+                connectTimeout = 5000
                 readTimeout = 60000
                 setRequestProperty("Content-Type", "application/json")
                 setRequestProperty("Accept", "application/json")
@@ -175,7 +176,7 @@ object ColonPathApiClient {
             val url = URL("${baseUrl.trimEnd('/')}/cases")
             val conn = (url.openConnection() as HttpURLConnection).apply {
                 requestMethod = "GET"
-                connectTimeout = 15000
+                connectTimeout = 5000
                 readTimeout = 30000
                 setRequestProperty("Accept", "application/json")
             }
@@ -228,7 +229,7 @@ object ColonPathApiClient {
             val url = URL("${baseUrl.trimEnd('/')}/cases/$caseId/result")
             val conn = (url.openConnection() as HttpURLConnection).apply {
                 requestMethod = "GET"
-                connectTimeout = 15000
+                connectTimeout = 5000
                 readTimeout = 30000
                 setRequestProperty("Accept", "application/json")
             }
@@ -258,7 +259,7 @@ object ColonPathApiClient {
             val url = URL("${baseUrl.trimEnd('/')}/cases/$caseId/csv")
             val conn = (url.openConnection() as HttpURLConnection).apply {
                 requestMethod = "GET"
-                connectTimeout = 15000
+                connectTimeout = 5000
                 readTimeout = 30000
             }
             if (conn.responseCode == HttpURLConnection.HTTP_OK) {
@@ -286,7 +287,7 @@ object ColonPathApiClient {
         try {
             val url = URL(getVisualizationUrl(caseId, visType))
             val conn = (url.openConnection() as HttpURLConnection).apply {
-                connectTimeout = 15000
+                connectTimeout = 5000
                 readTimeout = 30000
             }
             if (conn.responseCode == HttpURLConnection.HTTP_OK) {

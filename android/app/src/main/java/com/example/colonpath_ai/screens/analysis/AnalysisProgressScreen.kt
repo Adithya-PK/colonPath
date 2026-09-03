@@ -27,6 +27,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.colonpath_ai.ui.theme.*
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.isActive
 
 data class AnalysisStage(
     val title: String,
@@ -54,6 +56,7 @@ fun AnalysisProgressScreen(
     }
 
     var currentStage by remember { mutableIntStateOf(0) }
+    var elapsedSeconds by remember { mutableIntStateOf(0) }
 
     // Smooth animated progress value
     val targetProgress = (currentStage.toFloat() / stages.size.toFloat()).coerceIn(0f, 1f)
@@ -82,21 +85,28 @@ fun AnalysisProgressScreen(
         if (!isExecuting) {
             isExecuting = true
             executionError = null
-            
-            // Advance initial ingest steps
             currentStage = 0
-            delay(150)
-            currentStage = 1
-            delay(150)
-            currentStage = 2
+            elapsedSeconds = 0
+
+            val tickerJob = launch {
+                while (isActive) {
+                    delay(1000)
+                    elapsedSeconds++
+                    if (currentStage < 7 && elapsedSeconds % 4 == 0) {
+                        currentStage = (currentStage + 1).coerceAtMost(7)
+                    }
+                }
+            }
 
             val result = com.example.colonpath_ai.data.ColonPathRepository.executeAnalysis(caseId)
+            tickerJob.cancel()
+
             if (result.isSuccess) {
-                for (i in 3..stages.size) {
+                for (i in (currentStage + 1)..stages.size) {
                     currentStage = i
-                    delay(80)
+                    delay(70)
                 }
-                delay(100)
+                delay(120)
                 onComplete()
             } else {
                 executionError = result.exceptionOrNull()?.message ?: "Analysis execution error"
@@ -152,7 +162,7 @@ fun AnalysisProgressScreen(
                 )
 
                 Text(
-                    text = "Executing neural morphology extraction and reference matching",
+                    text = if (isExecuting) "Deep neural inference in progress • ${elapsedSeconds}s elapsed" else "Executing neural morphology extraction and reference matching",
                     style = MaterialTheme.typography.bodySmall,
                     color = TextSecondary
                 )

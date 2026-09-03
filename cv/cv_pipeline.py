@@ -237,7 +237,7 @@ def run_hovernet_segmentation(
             "type_info_path": str(CV_DIR / "hovernet_reference" / "consep_type_info.json"),
         }
         run_args = {
-            "batch_size": 1,
+            "batch_size": 4,
             "nr_inference_workers": 0,
             "nr_post_proc_workers": 0,
             "patch_input_shape": 270,

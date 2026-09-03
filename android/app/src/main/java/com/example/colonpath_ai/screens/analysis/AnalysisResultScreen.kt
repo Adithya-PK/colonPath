@@ -46,6 +46,9 @@ fun AnalysisResultScreen(
     var isCaseSaved by remember { mutableStateOf(false) }
     var showCopilotDialog by remember { mutableStateOf(false) }
 
+    // Instant in-memory cache for loaded visualization overlays
+    val overlayCache = remember { mutableStateMapOf<String, Bitmap>() }
+
     val caseResult = ColonPathRepository.currentCaseResult
     val caseId = caseResult?.case_id ?: ColonPathRepository.activeCaseId ?: "COL-2026-013"
 
@@ -69,15 +72,55 @@ fun AnalysisResultScreen(
     val conf = (pred?.calibrated_confidence ?: pred?.confidence ?: 0.864) * 100.0
     val tumorProb = (pred?.tumor_probability ?: 0.042) * 100.0
 
-    // Fetch visualization overlay bitmap when tab changes
-    LaunchedEffect(selectedVisType, caseId) {
-        if (selectedVisType == "original" && ColonPathRepository.selectedBitmap != null) {
+    // Pre-cache and background prefetch all visualization overlays for the current case only
+    LaunchedEffect(caseId) {
+        overlayCache.clear()
+        currentOverlayBitmap = null
+        if (ColonPathRepository.selectedBitmap != null) {
+            overlayCache["original"] = ColonPathRepository.selectedBitmap!!
             currentOverlayBitmap = ColonPathRepository.selectedBitmap
+        }
+        val visTypes = listOf("nuclei", "glands", "regions", "uncertainty", "pseudo_3d")
+        for (vType in visTypes) {
+            if (!overlayCache.containsKey(vType)) {
+                val bmp = ColonPathApiClient.fetchVisualizationBitmap(caseId, vType)
+                if (bmp != null) {
+                    overlayCache[vType] = bmp
+                    if (selectedVisType == vType) {
+                        currentOverlayBitmap = bmp
+                        isLoadingOverlay = false
+                    }
+                }
+            }
+        }
+    }
+
+    // Instantaneous local tab switching with fallback fetch
+    LaunchedEffect(selectedVisType, caseId) {
+        if (overlayCache.containsKey(selectedVisType)) {
+            currentOverlayBitmap = overlayCache[selectedVisType]
+            isLoadingOverlay = false
+        } else if (selectedVisType == "original" && ColonPathRepository.selectedBitmap != null) {
+            currentOverlayBitmap = ColonPathRepository.selectedBitmap
+            isLoadingOverlay = false
         } else {
             isLoadingOverlay = true
             val bmp = ColonPathApiClient.fetchVisualizationBitmap(caseId, selectedVisType)
-            currentOverlayBitmap = bmp ?: ColonPathRepository.selectedBitmap
+            if (bmp != null) {
+                overlayCache[selectedVisType] = bmp
+                currentOverlayBitmap = bmp
+            } else {
+                currentOverlayBitmap = ColonPathRepository.selectedBitmap
+            }
             isLoadingOverlay = false
+        }
+    }
+
+    // Purge in-memory bitmap cache when leaving this result screen
+    DisposableEffect(caseId) {
+        onDispose {
+            overlayCache.clear()
+            currentOverlayBitmap = null
         }
     }
 

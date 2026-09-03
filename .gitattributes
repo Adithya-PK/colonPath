@@ -1,0 +1,14 @@
+﻿# GitHub Linguist language overrides
+*.ipynb linguist-documentation=true
+*.ipynb linguist-detectable=false
+
+# Exclude vendored / reference / third-party code from language stats
+cv/hovernet_reference/* linguist-vendored=true
+backend/colonpath_ai/outputs/* linguist-vendored=true
+outputs/* linguist-vendored=true
+source_material/* linguist-documentation=true
+screenshots/* linguist-documentation=true
+
+# Prioritize core project languages
+*.kt linguist-detectable=true
+*.py linguist-detectable=true
