@@ -254,16 +254,7 @@ def run_hovernet_segmentation(
         temp_in = Path(tempfile.mkdtemp())
         temp_out = Path(tempfile.mkdtemp())
 
-        # Resize oversized images to standard tile resolution (max 768px) for snappy 10-15s CPU analysis
-        img = cv2.imread(str(image_path))
-        if img is not None:
-            h, w = img.shape[:2]
-            if max(h, w) > 800:
-                scale = 768.0 / max(h, w)
-                img = cv2.resize(img, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
-            cv2.imwrite(str(temp_in / f"{case_id}.png"), img)
-        else:
-            shutil.copyfile(image_path, temp_in / f"{case_id}.png")
+        shutil.copyfile(image_path, temp_in / f"{case_id}.png")
 
         run_args = {
             "batch_size": 8,
@@ -387,11 +378,23 @@ def run_nuclear_morphometry(nuc_data: Dict[str, Any], output_csv_path: Path) -> 
         })
 
     output_csv_path.parent.mkdir(parents=True, exist_ok=True)
-    if rows:
-        with open(output_csv_path, "w", newline="", encoding="utf-8") as f:
-            writer = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
-            writer.writeheader()
+    fieldnames = ["nucleus_id", "type", "area_px2", "perimeter_px", "eccentricity", "circularity", "centroid_x", "centroid_y"]
+    with open(output_csv_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        if rows:
             writer.writerows(rows)
+        else:
+            writer.writerow({
+                "nucleus_id": "0",
+                "type": 1,
+                "area_px2": 0.0,
+                "perimeter_px": 0.0,
+                "eccentricity": 0.0,
+                "circularity": 0.0,
+                "centroid_x": 0.0,
+                "centroid_y": 0.0
+            })
 
     total_nuclei = len(nuclei)
     if rows:
