@@ -16,13 +16,14 @@
 2. [Why Colorectal Cancer (Colon) Specifically?](#2-why-colorectal-cancer-colon-specifically)
 3. [Full System Specifications Matrix (Hardware, Image, Compute, Cost)](#3-full-system-specifications-matrix)
 4. [Comprehensive Oncology Benchmark & Confusion Matrices](#4-comprehensive-oncology-benchmark--confusion-matrices)
-5. [Multi-Model Architecture & Comparison with Alternatives](#5-multi-model-architecture--comparison-with-alternatives)
-6. [Agentic AI Multi-Agent Architecture & Workflow](AGENTIC_AI_ARCHITECTURE_AND_WORKFLOW.md)
-7. [Competitive Benchmark & Existing Systems Analysis](EXISTING_SYSTEMS_COMPARATIVE_ANALYSIS.md)
-8. [Master Evidentiary Proof & Scientific Verification Matrix](MASTER_EVIDENTIARY_PROOF_AND_VERIFICATION_MATRIX.md)
-9. [120 Master Jury Defense Questions & Answers](JURY_DEFENSE_120_QUESTIONS_AND_ANSWERS.md)
-10. [Quickstart: Running Backend to Android App](#10-quickstart-running-backend-to-android-app)
-11. [REST API Contract Reference](#11-rest-api-contract-reference)
+5. [Evaluation Metrics, Comparative Benchmarks & Hardware Specs](EVALUATION_METRICS_AND_COMPARATIVE_BENCHMARKS.md)
+6. [Multi-Model Architecture & Comparison with Alternatives](#5-multi-model-architecture--comparison-with-alternatives)
+7. [Agentic AI Multi-Agent Architecture & Workflow](AGENTIC_AI_ARCHITECTURE_AND_WORKFLOW.md)
+8. [Competitive Benchmark & Existing Systems Analysis](EXISTING_SYSTEMS_COMPARATIVE_ANALYSIS.md)
+9. [Master Evidentiary Proof & Scientific Verification Matrix](MASTER_EVIDENTIARY_PROOF_AND_VERIFICATION_MATRIX.md)
+10. [120 Master Jury Defense Questions & Answers](JURY_DEFENSE_120_QUESTIONS_AND_ANSWERS.md)
+11. [Quickstart: Running Backend to Android App](#10-quickstart-running-backend-to-android-app)
+12. [REST API Contract Reference](#11-rest-api-contract-reference)
 
 ---
 
